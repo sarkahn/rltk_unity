@@ -40,7 +40,7 @@ public class ConsoleNoise : MonoBehaviour
             if (_buffer.IsCreated)
                 _buffer.Dispose();
 
-            _buffer = new NativeArray<Tile>(_console.CellCount, Allocator.Persistent);
+            _buffer = _console.CopyTiles(Allocator.Persistent);
         }
     }
 
@@ -55,19 +55,19 @@ public class ConsoleNoise : MonoBehaviour
     
     private void Update()
     {
+        
         p.x += Time.deltaTime * (_scrollSpeed * 10);
+
         
         if(_noiseJob.IsCompleted )
         {
-            // Required by the safety system
+            //// Required by the safety system
             _noiseJob.Complete();
 
             InitBuffer();
 
-            _noiseJob = _console.WriteTiles(_buffer, _noiseJob);
+            _noiseJob = _console.ScheduleWriteTiles(_buffer, _noiseJob);
 
-            _noiseJob = _console.CopyTiles(_buffer, _noiseJob );
-            
             _noiseJob = new NoiseJob
             {
                 width = _console.Width,
@@ -77,6 +77,10 @@ public class ConsoleNoise : MonoBehaviour
                 buffer = _buffer,
                 scale = _scale,
             }.Schedule(_buffer.Length, 64, _noiseJob);
+
+            _noiseJob.Complete();
+            _console.WriteTiles(_buffer);
+
         }
     }
 
@@ -86,7 +90,7 @@ public class ConsoleNoise : MonoBehaviour
     }
 
 
-    [BurstCompile]
+    //[BurstCompile]
     struct NoiseJob : IJobParallelFor
     {
         public int width;
@@ -116,8 +120,9 @@ public class ConsoleNoise : MonoBehaviour
 
             var t = buffer[index];
 
-            t.fgColor = Color.white * v;
-
+            t.fgColor = Color.blue * v;
+            t.bgColor = Color.white * v;
+           
             buffer[index] = t;
         }
         

@@ -127,8 +127,10 @@ namespace RLTK.Consoles
 
                 int2 glyphIndex = new int2(
                     tile.glyph % 16,
-                    16 - (tile.glyph / 16)
+                    16 - 1 - (tile.glyph / 16)
                     );
+
+
 
                 float2 right = new float2(uvSize.x, 0);
                 float2 up = new float2(0, uvSize.y);
@@ -176,16 +178,7 @@ namespace RLTK.Consoles
         /// <returns>The job handle for the scheduled jobs.</returns>
         public JobHandle ScheduleRebuild(int w, int h, NativeArray<Tile> tiles, JobHandle inputDeps = default)
         {
-
-            // Flush any previously running jobs if needed.
-            if (_jobRunning)
-            {
-                //Debug.Log("Job was still running when we called rebuild - flushing previous jobs");
-                _rebuildDataJob.Complete();
-                Update();
-            }
-
-            JobHandle.CombineDependencies(inputDeps, _rebuildDataJob);
+            _rebuildDataJob = JobHandle.CombineDependencies(inputDeps, _rebuildDataJob);
 
             float2 uvSize = new float2(1f / 16f);
 
@@ -195,14 +188,14 @@ namespace RLTK.Consoles
                 uvs = _uvs,
                 uvSize = uvSize,
 
-            }.Schedule(tiles.Length, 64, inputDeps);
+            }.Schedule(tiles.Length, 64, _rebuildDataJob);
 
             var colorJob = new ColorsJob
             {
                 tiles = tiles,
                 fgColors = _fgColors,
                 bgColors = _bgColors,
-            }.Schedule(tiles.Length, 64, inputDeps);
+            }.Schedule(tiles.Length, 64, _rebuildDataJob);
 
             _rebuildDataJob = JobHandle.CombineDependencies(uvsJob, colorJob);
 

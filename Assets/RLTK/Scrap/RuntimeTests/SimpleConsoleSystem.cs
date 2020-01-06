@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Rendering;
 using UnityEngine;
 namespace RLTK.Scrapped
 {
@@ -62,16 +61,16 @@ namespace RLTK.Scrapped
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            Entities
-                .WithoutBurst()
-                .WithNone<ConsoleInitialized>()
-                .WithStructuralChanges()
-                .ForEach((Entity e, in SimpleConsoleData data, in RenderMesh renderMesh) =>
-                {
-                    EntityManager.AddComponent<ConsoleInitialized>(e);
+            //Entities
+            //    .WithoutBurst()
+            //    .WithNone<ConsoleInitialized>() 
+            //    .WithStructuralChanges()
+            //    .ForEach((Entity e, in SimpleConsoleData data, in RenderMesh renderMesh) =>
+            //    {
+            //        EntityManager.AddComponent<ConsoleInitialized>(e);
 
-                    InitConsole(data, renderMesh.mesh);
-                }).Run();
+            //        InitConsole(data, renderMesh.mesh);
+            //    }).Run();
 
             return default;
         }
