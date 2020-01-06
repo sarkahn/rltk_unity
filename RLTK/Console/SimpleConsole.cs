@@ -12,9 +12,6 @@ namespace RLTK.Consoles
 {
     public class SimpleConsole : IConsole, IDisposable
     {
-        IConsoleBackend _backend;
-
-        NativeArray<Tile> _tiles;
 
         public bool IsDirty { get; private set; }
 
@@ -28,16 +25,19 @@ namespace RLTK.Consoles
         
         public int2 PixelsPerUnit => _backend.PixelsPerUnit;
 
+        IConsoleBackend _backend;
+        NativeArray<Tile> _tiles;
+
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int At(int x, int y) => ((Size.y - 1 - y) * Size.x) + x;
+        public int At(int x, int y) => y * Height + x;
 
         JobHandle _tileJobs;
 
         public SimpleConsole(int width, int height, IConsoleBackend backend, Allocator allocator)
         {
             Size = new int2(width, height);
-            int tileCount = width * height;
-            _tiles = new NativeArray<Tile>(tileCount, allocator);
+            _tiles = new NativeArray<Tile>(CellCount, allocator);
             for( int i = 0; i < _tiles.Length; ++i )
             {
                 _tiles[i] = new Tile
@@ -55,24 +55,54 @@ namespace RLTK.Consoles
         {
             IsDirty = true;
 
-            _tileJobs.Complete();
-
             _tileJobs = new ClearJob
             {
                 tiles = _tiles
             }.Schedule(_tiles.Length, 64, _tileJobs);
         }
 
-        [BurstCompile]
-        struct ClearJob : IJobParallelFor
+        public JobHandle ScheduleClearScreen(JobHandle inputDeps)
         {
-            [WriteOnly]
-            public NativeArray<Tile> tiles;
+            IsDirty = true;
 
-            public void Execute(int index)
+            _tileJobs = new ClearJob
             {
-                tiles[index] = Tile.Default;
-            }
+                tiles = _tiles
+            }.Schedule(_tiles.Length, 64, _tileJobs);
+
+            return _tileJobs;
+        }
+
+        public void Print(int x, int y, string str)
+        {
+            IsDirty = true;
+
+            var bytes = CodePage437.StringToCP437(str, Allocator.TempJob);
+
+            _tileJobs = new WriteStringJob
+            {
+                bytes = bytes,
+                pos = new int2(x, y),
+                tiles = _tiles,
+                width = Size.x,
+            }.Schedule(_tileJobs);
+        }
+
+        public void PrintColor(int x, int y, string str, Color fgColor, Color bgColor)
+        {
+            IsDirty = true;
+
+            var bytes = CodePage437.StringToCP437(str, Allocator.TempJob);
+
+            _tileJobs = new WriteStringJobWithColors
+            {
+                bytes = bytes,
+                pos = new int2(x, y),
+                tiles = _tiles,
+                width = Size.x,
+                fgColor = fgColor,
+                bgColor = bgColor
+            }.Schedule(_tileJobs);
         }
 
         /// <summary>
@@ -98,42 +128,32 @@ namespace RLTK.Consoles
             throw new System.NotImplementedException();
         }
 
-        public void DrawBox(int x, int y, int width, int height, Color32 fgColor, Color32 bgColor)
+        public void DrawBox(int x, int y, int width, int height, Color fgColor, Color bgColor)
         {
             throw new System.NotImplementedException();
         }
 
-        public void DrawBoxDouble(int x, int y, int width, int height, Color32 fgColor, Color32 bgColor)
+        public void DrawBoxDouble(int x, int y, int width, int height, Color fgColor, Color bgColor)
         {
             throw new System.NotImplementedException();
         }
 
-        public void DrawHollowBox(int x, int y, int width, int height, Color32 fgColor, Color32 bgColor)
+        public void DrawHollowBox(int x, int y, int width, int height, Color fgColor, Color bgColor)
         {
             throw new System.NotImplementedException();
         }
 
-        public void DrawHollowBoxDouble(int x, int y, int width, int height, Color32 fgColor, Color32 bgColor)
+        public void DrawHollowBoxDouble(int x, int y, int width, int height, Color fgColor, Color bgColor)
         {
             throw new System.NotImplementedException();
         }
 
-        public void FillRegion(IntRect r, byte glyph, Color32 fgColor, Color32 bgColor)
+        public void FillRegion(IntRect r, byte glyph, Color fgColor, Color bgColor)
         {
             throw new System.NotImplementedException();
         }
 
         public byte? Get(int x, int y)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Print(int x, int y, string str)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void PrintColor(int x, int y, Color32 fgColor, Color32 bgColor, string str)
         {
             throw new System.NotImplementedException();
         }
@@ -149,9 +169,8 @@ namespace RLTK.Consoles
             throw new System.NotImplementedException();
         }
 
-        public void Set(int x, int y, Color32 fgColor, Color32 bgColor, byte glyph)
+        public void Set(int x, int y, Color fgColor, Color bgColor, byte glyph)
         {
-            throw new System.NotImplementedException();
         }
 
 
@@ -166,11 +185,9 @@ namespace RLTK.Consoles
 
         }
 
-        public void CopyTiles(NativeArray<Tile> buffer)
+        public NativeArray<Tile> CopyTiles(Allocator allocator)
         {
-            _tileJobs.Complete();
-
-            NativeArray<Tile>.Copy(_tiles, buffer);
+            return new NativeArray<Tile>(_tiles, allocator);
         }
 
         public void WriteTiles(NativeArray<Tile> buffer)
@@ -199,16 +216,19 @@ namespace RLTK.Consoles
         {
             _tileJobs = JobHandle.CombineDependencies(inputDeps, _tileJobs);
             
+            //Debug.Log("SCHEDULING WRITE JOB");
             _tileJobs = new CopyTilesJob
             {
                 source = input,
                 dest = _tiles,
             }.Schedule(_tileJobs);
-
+            
             IsDirty = true;
 
             return _tileJobs;
         }
+
+        #region Jobs
 
         [BurstCompile]
         struct CopyTilesJob : IJob
@@ -224,6 +244,129 @@ namespace RLTK.Consoles
                 NativeArray<Tile>.Copy(source, dest);
             }
         }
+
+        [BurstCompile]
+        struct ClearJob : IJobParallelFor
+        {
+            [WriteOnly]
+            public NativeArray<Tile> tiles;
+
+            public void Execute(int index)
+            {
+                tiles[index] = Tile.Default;
+            }
+        }
+
+        [BurstCompile]
+        struct WriteStringJobWithColors : IJob
+        {
+            public int2 pos;
+            public int width;
+
+            public Color fgColor;
+            public Color bgColor;
+
+            [ReadOnly]
+            [DeallocateOnJobCompletion]
+            public NativeArray<byte> bytes;
+
+            public NativeArray<Tile> tiles;
+
+            public void Execute()
+            {
+                //int index = (height - 1 - pos.y * width) + pos.x;
+                for (int i = 0; i < bytes.Length; ++i)
+                {
+                    int index = pos.y * width + pos.x;
+                    if (index >= 0 && index < tiles.Length)
+                    {
+                        var t = tiles[index];
+                        t.glyph = bytes[i];
+                        if( fgColor != default )
+                            t.fgColor = fgColor;
+                        if( bgColor != default )
+                            t.bgColor = bgColor;
+                        tiles[index] = t;
+                    }
+                    else
+                        return;
+
+                    ++pos.x;
+
+                    if (pos.x >= width)
+                    {
+                        pos.x = 0;
+                        pos.y--;
+                    }
+                }
+            }
+        }
+
+
+        [BurstCompile]
+        struct WriteStringJob : IJob
+        {
+            public int2 pos;
+            public int width;
+
+            [ReadOnly]
+            [DeallocateOnJobCompletion]
+            public NativeArray<byte> bytes;
+
+            public NativeArray<Tile> tiles;
+
+            public void Execute()
+            {
+                //int index = (height - 1 - pos.y * width) + pos.x;
+                for (int i = 0; i < bytes.Length; ++i)
+                {
+                    int index = pos.y * width+ pos.x;
+                    if (index >= 0 && index < tiles.Length)
+                    {
+                        var t = tiles[index];
+                        t.glyph = bytes[i];
+                        tiles[index] = t;
+                    }
+                    else
+                        return;
+
+                    ++pos.x;
+
+                    if (pos.x >= width)
+                    {
+                        pos.x = 0;
+                        pos.y--;
+                    }
+                }
+            }
+        }
+
+        //[BurstCompile]
+        //struct WriteTilesJob : IJob
+        //{
+        //    [ReadOnly]
+        //    public NativeArray<int2> positions;
+        //    [ReadOnly]
+        //    public NativeArray<Tile> sourceTiles;
+            
+        //    [WriteOnly]
+        //    public NativeArray<Tile> destTiles;
+
+        //    public int width;
+        //    public int height;
+
+        //    public void Execute()
+        //    {
+        //        for( int sourceIndex = 0; sourceIndex < sourceTiles.Length; ++sourceIndex )
+        //        {
+        //            var p = positions[sourceIndex];
+        //            int mapIndex = p.y * width + p.x;
+        //            destTiles[mapIndex] = sourceTiles[sourceIndex];
+        //        }
+        //    }
+        //}
+
+        #endregion
 
     }
 }

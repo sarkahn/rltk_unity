@@ -23,8 +23,12 @@ namespace RLTK.MonoBehaviours
         private void OnEnable()
         {
             if (_targetConsole == null)
-                Debug.LogError($"Error initializing {this.GetType().Name}, you must set a target " +
-                    $"Console in the inspector", gameObject);
+            {
+                _targetConsole = FindObjectOfType<SimpleConsoleProxy>();
+                if( _targetConsole == null )
+                    Debug.LogError($"Error initializing {this.GetType().Name}, unable to find a " +
+                        $"console to target", gameObject);
+            }
 
             if (_camera == null)
                 _camera = GetComponent<Camera>();
@@ -45,10 +49,15 @@ namespace RLTK.MonoBehaviours
             while (isActiveAndEnabled)
             {
                 int2 consoleDims = _targetConsole.Size;
+                int2 consolePPU = _targetConsole.PixelsPerUnit;
 
                 int2 targetRes = consoleDims * _targetConsole.PixelsPerUnit;
 
                 int2 cameraDims = new int2(_pixelCamera.refResolutionX, _pixelCamera.refResolutionY);
+
+                if (_pixelCamera.assetsPPU != consolePPU.y)
+                    _pixelCamera.assetsPPU = consolePPU.y;
+
 
                 if (targetRes.x != cameraDims.x || targetRes.y != cameraDims.y)
                 {

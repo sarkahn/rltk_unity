@@ -8,12 +8,13 @@ namespace RLTK
         public byte glyph;
         public Color fgColor;
         public Color bgColor;
+        
 
         public static Tile Default => new Tile
         {
             bgColor = Color.black,
             fgColor = Color.white,
-            glyph = 1
+            glyph = 0
         };
 
         public bool Equals(Tile other)
