@@ -11,10 +11,6 @@ echo $COMMIT
 
 echo "TARGET_BRANCH is $TARGET_BRANCH"
 
-cp README.md ./Assets/README.md
-cp LICENSE.md ./Assets/LICENSE.md
-cp CHANGELOG.md ./Assets/CHANGELOG.md
-
 git archive -o archive.tar HEAD:$FOLDER_TO_EXPORT
 ARCHIVE_PATH=$(pwd)
 
