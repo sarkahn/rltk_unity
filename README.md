@@ -3,14 +3,14 @@ This is a Unity port of [The Roguelike Toolkit (RLTK), implemented for Rust](htt
 
 The samples demonstrate how to properly set up and write to a console:
 ##### Samples/Noise 
-![](./Documentation/images~/noise.gif)
+![](./Assets/Documentation/images~/noise.gif)
 
 ##### Samples/ShaderExample
-![](./Documentation/images~/console_shader2.gif)
+![](./Assets/Documentation/images~/console_shader2.gif)
 
 ## How to get it
 The recommended way to use this package is via the Unity Package Manager:
-![](./Documentation/images~/upm.gif)
+![](./Assets/Documentation/images~/upm.gif)
 
 This will automatically install the package and all required dependencies, as well as letting you easily receive package updates via the package manager. When the package is intalled you can import the samples via the package manager ui.
 
