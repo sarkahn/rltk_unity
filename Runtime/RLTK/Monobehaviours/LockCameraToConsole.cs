@@ -63,7 +63,7 @@ namespace RLTK.MonoBehaviours
 
                 int pixelScale = _pixelCamera.pixelRatio;
 
-                _targetConsole.GetComponent<Renderer>()?.sharedMaterial?.SetFloat("_PixelScale", pixelScale);
+                _targetConsole.GetComponent<Renderer>()?.sharedMaterial?.SetFloat("_PixelScaleCamera", pixelScale);
 
                 if (targetRes.x != cameraDims.x || targetRes.y != cameraDims.y)
                 {
