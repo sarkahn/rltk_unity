@@ -23,13 +23,20 @@
 
 		_LineIntensity("Scanline Intensity", Range(0,1)) = 0.25
 	
-		// Applies the pixel scaling from the pixel perfect camera. 
-		[Toggle(APPLY_PIXEL_SCALE)]
+		// Setting for pixel scaling: 
+		// 	 _APPLYPIXELSCALE_NONE, _APPLYPIXELSCALE_CAMERA _APPLYPIXELSCALE_MANUAL
+		// If set then VPOS will be adjusted so per-pixel effects are scaled to virtual pixels
+		[KeywordEnum(None, Camera, Manual)]
 		_ApplyPixelScale("Apply pixel scaling to per-pixel effects", Float) = 0
 
-		// If _ApplyPixelScale is true then VPOS will be adjust so 
-		// per-pixel effects are scaled with virtual pixels
-		_PixelScale("Pixel Scale (Set from script)", Float) = 1 
+		// Camera pixel scale, should be automatically set from script. See LockCameraToConsole for example
+		// Only applies if _APPLYPIXELSCALE_PIXEL or _APPLYPIXELSCALE_HALFPIXEL is set
+		[HideInInspector]
+		_PixelScaleCamera("Camera Pixel Scale", Float) = 1 
+		_PixelScaleCameraFrequency("Camera Pixel Scale Frequency", Float) = 2
+
+		// Manual pixel scale set by the user. Only applied if _APPLYPIXELSCALE_MANUAL is set
+		_PixelScale("Manual Pixel Scale", Float) = 1
     }
     SubShader
     {
@@ -47,8 +54,7 @@
 			#pragma multi_compile __ SCANLINES
 			#pragma multi_compile __ HARD_LINES
 			#pragma multi_compile __ SCANLINES_FG_ONLY
-
-			#pragma shader_feature APPLY_PIXEL_SCALE
+			#pragma multi_compile _APPLYPIXELSCALE_NONE _APPLYPIXELSCALE_CAMERA _APPLYPIXELSCALE_MANUAL 
 
             #include "UnityCG.cginc"
 
@@ -71,9 +77,11 @@
             float4 _MainTex_ST;
 			float _BGCutoff;
 			float _LineIntensity;
-			float _Frequency;
 			float _ScreenBurnIntensity;
 			float _ScanlinesFGOnly;
+
+			float _PixelScaleCameraFrequency;
+			float _PixelScaleCamera;
 			float _PixelScale;
 
             v2f vert (appdata v, out float4 outpos : SV_POSITION)
@@ -86,7 +94,7 @@
                 return o;
             }
 
-			fixed3 scanline2(fixed3 col, UNITY_VPOS_TYPE screenPos)
+			fixed3 scanline(fixed3 col, fixed2 screenPos)
 			{
 				#ifdef HARD_LINES
 					if ((uint)screenPos.y % 2 == 0)
@@ -95,21 +103,14 @@
 						return col * (1 - _LineIntensity);
 				#endif
 
-				fixed scanline = fmod(screenPos.y, 2.0);
+				fixed scanline = fmod(screenPos.y, 2.0) / 2;
 				fixed3 scanColor = col * (1 - (scanline * _LineIntensity) );
 
 				return scanColor;
 			}
 
-			fixed3 screenburn2(fixed3 col, UNITY_VPOS_TYPE screenPos)
+			fixed3 screenburn(fixed3 col, fixed2 screenPos, fixed2 screenDims)
 			{
-				float2 screenDims = _ScreenParams.xy;
-
-#if APPLY_PIXEL_SCALE
-				screenDims /= _PixelScale;
-#endif
-				screenPos = floor(screenPos);
-
 				float dist = (1.0 -
 					distance(float2(screenPos.x / screenDims.x, screenPos.y / screenDims.y), float2(0.5, 0.5)));
 
@@ -119,7 +120,7 @@
 			}
 
 
-            fixed4 frag (v2f i, UNITY_VPOS_TYPE screenPos : VPOS) : SV_Target
+            fixed4 frag (v2f i, UNITY_VPOS_TYPE vPos : VPOS) : SV_Target
             {
                 fixed4 texCol = tex2D(_MainTex, i.uv);
 				fixed4 col = i.fg * texCol;
@@ -127,20 +128,31 @@
 				fixed3 fg = i.fg.rgb * texCol;
 				fixed3 bg = i.bg.rgb;
 
-#if APPLY_PIXEL_SCALE
+				fixed2 screenPos = vPos.xy;
+				fixed2 screenDims = _ScreenParams.xy;
+
+				
+
+#if _APPLYPIXELSCALE_CAMERA
+				float scale = _PixelScaleCamera / _PixelScaleCameraFrequency;
+				scale = max(1, scale);
+				screenPos /= scale;
+				screenDims /= scale;
+#elif _APPLYPIXELSCALE_MANUAL
 				screenPos /= _PixelScale;
+				screenDims /= _PixelScale;
 #endif
 
 #if SCREEN_BURN
-				bg = screenburn2(bg, screenPos);
+				bg = screenburn(bg, screenPos, screenDims);
 #endif
  
 #if SCANLINES
 	#if SCANLINES_FG_ONLY
-					fg = scanline2(fg, screenPos);
+				fg = scanline(fg, screenPos);
 	#else
-					fg = scanline2(fg, screenPos);
-					bg = scanline2(bg, screenPos);
+				fg = scanline(fg, screenPos);
+				bg = scanline(bg, screenPos);
 	#endif
 #endif
 
