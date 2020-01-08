@@ -43,10 +43,5 @@
       "description": "Console and an Unlit Quad side by side for comparison.",
       "path": "Samples~/UnlitComparison"
     }
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/sarkahn/rltk_unity.git#upm",
-    "revision": "d9a4edca1f88ceb2ca9470e49671c08d3bcc443a"
-  }
+  ]
 }
