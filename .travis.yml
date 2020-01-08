@@ -9,7 +9,7 @@ env:
       TEST_BRANCH=upm-test #for other branches
       TARGET_BRANCH=not_defined #upm-branch to clone, will be chosen later
       TEST_RUN=false #will be true if branch is not master or develop
-      FOLDER_TO_EXPORT=Assets/ParentFolder #parent folder for your root directory
+      FOLDER_TO_EXPORT=Assets #parent folder for your root directory
 
 sudo: required
 
@@ -25,6 +25,9 @@ before_install:
       fi 
 
 after_success:
+  - cp README.md "$FOLDER_TO_EXPORT/README.md"
+  - cp LICENSE.md "$FOLDER_TO_EXPORT/LICENSE.md"
+  - cp CHANGELOG.md "$FOLDER_TO_EXPORT/CHANGELOG.md"
   - chmod 777 -R ci
   - ci/move_to_packagebranch.sh
 
