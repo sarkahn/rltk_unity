@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.1.3] - 2020-01-08
+* Changed package name to just "RLKT" so it doesn't look so horrible in the packages folder.
+
 ## [0.1.2] - 2020-01-08
 * Added editor create menu
 * Fixed material resource name bug.
