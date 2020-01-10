@@ -7,9 +7,9 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Custom_GlyphScanlinesShader 1
+  m_Name: ConsoleMat
   m_Shader: {fileID: 4800000, guid: 7ed6810dbf84d4d44a425e006f0f4836, type: 3}
-  m_ShaderKeywords: HARD_LINES SCANLINES SCANLINES_FG_ONLY SCREEN_BURN
+  m_ShaderKeywords: HARD_LINES SCANLINES SCANLINES_FG_ONLY
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -32,8 +32,10 @@ Material:
     - _Intensity: 0.585
     - _LineIntensity: 0.474
     - _PixelScale: 2
+    - _PixelScaleCamera: 2
+    - _PixelScaleCameraFrequency: 2
     - _Scanlines: 1
     - _ScanlinesFGOnly: 1
-    - _ScreenBurn: 1
+    - _ScreenBurn: 0
     - _ScreenBurnIntensity: 0.775
     m_Colors: []

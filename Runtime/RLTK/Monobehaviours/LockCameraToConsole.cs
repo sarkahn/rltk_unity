@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.Universal;
+using UnityEngine.Rendering.Universal;
 
 namespace RLTK.MonoBehaviours
 {
@@ -23,21 +25,20 @@ namespace RLTK.MonoBehaviours
         [SerializeField]
         SimpleConsoleProxy _targetConsole;
 
+        public void SetTarget(SimpleConsoleProxy console)
+        {
+            _targetConsole = console;
+            StartCoroutine(VerifyCamera());
+        }
+
         private void OnEnable()
         {
-            if (_targetConsole == null)
-            {
-                _targetConsole = FindObjectOfType<SimpleConsoleProxy>();
-                if( _targetConsole == null )
-                    Debug.LogError($"Error initializing {this.GetType().Name}, unable to find a " +
-                        $"console to target", gameObject);
-            }
-
             if (_camera == null)
                 _camera = GetComponent<Camera>();
 
             if (_pixelCamera == null)
                 _pixelCamera = GetComponent<PixelPerfectCamera>();
+
 
             _waitTime = new WaitForSeconds(.1f);
         }
@@ -49,7 +50,7 @@ namespace RLTK.MonoBehaviours
 
         IEnumerator VerifyCamera()
         {
-            while (_targetConsole != null && _targetConsole.isActiveAndEnabled && isActiveAndEnabled)
+            while (_targetConsole != null && _targetConsole.isActiveAndEnabled && isActiveAndEnabled && Application.isPlaying)
             {
                 int2 consoleDims = _targetConsole.Size;
                 int2 consolePPU = _targetConsole.PixelsPerUnit;
@@ -64,6 +65,8 @@ namespace RLTK.MonoBehaviours
                 int pixelScale = _pixelCamera.pixelRatio;
 
                 _targetConsole.GetComponent<Renderer>()?.sharedMaterial?.SetFloat("_PixelScaleCamera", pixelScale);
+                
+                
 
                 if (targetRes.x != cameraDims.x || targetRes.y != cameraDims.y)
                 {
