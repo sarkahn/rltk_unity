@@ -1,7 +1,7 @@
 {
   "name": "com.sark.rltk_unity",
   "displayName": "RLTK - The Roguelike Toolkit for Unity",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "unity": "2019.3",
   "unityRelease": "0f1",
   "description": "A framework for developing traditional text based roguelikes in Unity. Ported from rltk_rs.",

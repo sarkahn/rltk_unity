@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.1.2] - 2020-01-08
+* Added editor create menu
+* Fixed material resource name bug.
 
 ## [0.1.1] - 2020-01-08
 * Some shader tweaking, added a splash screen example.

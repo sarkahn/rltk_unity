@@ -36,7 +36,6 @@ namespace RLTK.MonoBehaviours
 
         void RebuildConsole()
         {
-            //Debug.Log("REBUILDING CONSOLE");
             var renderer = GetComponent<MeshRenderer>();
             var filter = GetComponent<MeshFilter>();
 
@@ -101,7 +100,9 @@ namespace RLTK.MonoBehaviours
 
         public void Resize(int w, int h)
         {
-            throw new System.NotImplementedException();
+            _width = w;
+            _height = h;
+            _resized = true;
         }
 
         public void Draw(Font font, Material mat)
