@@ -35,7 +35,7 @@ There are three primary console types, `SimpleConsole`, `NativeConsole` and `Sim
 ## How to get it
 The recommended way to use this package is via the Unity Package Manager. At the top left 
 of the package manager, click the "+" button and choose "Add package from git url...". 
-Then paste in `https://github.com/sarkahn/rltk_unity#upm`
+Then paste in `https://github.com/sarkahn/rltk_unity.git#upm`
 and you should be good to go.
 
 ![](./Assets/Documentation/images~/upm.gif)

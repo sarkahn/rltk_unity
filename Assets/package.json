@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "unity": "2019.3",
   "unityRelease": "0f1",
-  "description": "The Rogulike Toolkit: A framework for developing traditional text based roguelikes in Unity. Ported from rltk_rs.",
+  "description": "Roguelike Toolkit: A framework for developing traditional text based roguelikes in Unity. Ported from rltk_rs.",
   "keywords": [
     "rltk",
     "roguelike"
