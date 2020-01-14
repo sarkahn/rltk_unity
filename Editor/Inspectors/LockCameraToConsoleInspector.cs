@@ -11,7 +11,7 @@ public class LockCameraToConsoleInspector : Editor
     {
         serializedObject.Update();
 
-        var consoleProp = serializedObject.FindProperty("_targetConsole");
+        var consoleProp = serializedObject.FindProperty("_consoleProxy");
 
         var oldVal = consoleProp.objectReferenceValue;
 
@@ -21,9 +21,9 @@ public class LockCameraToConsoleInspector : Editor
         {
             base.OnInspectorGUI();
 
-            if( check.changed && consoleProp.objectReferenceValue != oldVal )
+            if (check.changed && consoleProp.objectReferenceValue != oldVal)
             {
-                tar.SetTarget(consoleProp.objectReferenceValue as SimpleConsoleProxy);
+                tar.SetTarget(consoleProp.objectReferenceValue as SimpleConsoleProxy, tar.transform);
             }
         }
 

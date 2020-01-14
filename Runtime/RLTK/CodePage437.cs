@@ -23,6 +23,14 @@ namespace RLTK
             return bytes;
         }
 
+        public static string CP437ToString(NativeArray<byte> bytes)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < bytes.Length; ++i)
+                sb.Append(ToChar(bytes[i]));
+            return sb.ToString();
+        }
+
         public static byte[] StringToCP437Alloc(string str)
         {
             var bytes = new byte[str.Length];

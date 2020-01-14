@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿
 using Unity.Collections;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -13,24 +11,27 @@ namespace RLTK.Consoles
         int2 Size { get; }
 
         int CellCount { get; }
-
+        
         int2 PixelsPerUnit { get; }
 
-        /// <summary>
-        /// Update internal render data if our tile data has changed.
-        /// </summary>
-        void RebuildIfDirty();
+        Material Material { get; }
         
         void ClearScreen();
 
         void Resize(int w, int h);
 
-        void Draw(Font font, Material mat);
+        void Draw();
 
         int At(int x, int y);
         
         void Print(int x, int y, string str);
 
+        NativeArray<Tile> ReadTiles(int x, int y, int len, Allocator allocator);
+        NativeArray<Tile> ReadAllTiles(Allocator allocator);
+
+        void WriteTiles(int x, int y, NativeArray<Tile> tiles);
+        void WriteAllTiles(NativeArray<Tile> tiles);
+        
         void PrintColor(int x, int y, string str, Color fgColor, Color bgColor);
 
         void Set(int x, int y, Color fgColor, Color bgColor, byte glyph);
@@ -45,20 +46,8 @@ namespace RLTK.Consoles
 
         void FillRegion(IntRect r, byte glyph, Color fgColor, Color bgColor);
 
-        JobHandle ScheduleWriteTiles(NativeArray<Tile> input, JobHandle inputDeps);
-
-        JobHandle ScheduleCopyTiles(NativeArray<Tile> buffer, JobHandle inputDeps);
-
-        /// <summary>
-        /// Immediately copy the tiles from the console. Will force a sync point.
-        /// </summary>
-        NativeArray<Tile> CopyTiles(Allocator allocator);
-
-        /// <summary>
-        /// Immediately write the tiles to the console. Will force a sync point.
-        /// </summary>
-        void WriteTiles(NativeArray<Tile> tiles);
-
         byte? Get(int x, int y);
+
+        void SetMaterial(Material mat);
     }
 }

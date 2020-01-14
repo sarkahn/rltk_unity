@@ -36,7 +36,7 @@ namespace RLTK.Samples
                 if (_buffer.IsCreated)
                     _buffer.Dispose();
 
-                _buffer = _console.CopyTiles(Allocator.Persistent);
+                _buffer = new NativeArray<Tile>( _console.CellCount, Allocator.Persistent);
             }
         }
 
@@ -54,15 +54,14 @@ namespace RLTK.Samples
 
             p.x += Time.deltaTime * (_scrollSpeed * 10);
 
+
             if (_noiseJob.IsCompleted)
             {
                 //// Required by the safety system
                 _noiseJob.Complete();
 
                 InitBuffer();
-
-                _noiseJob = _console.ScheduleWriteTiles(_buffer, _noiseJob);
-
+                
                 _noiseJob = new NoiseJob
                 {
                     width = _console.Width,
@@ -73,12 +72,12 @@ namespace RLTK.Samples
                     scale = _scale,
                 }.Schedule(_buffer.Length, 64, _noiseJob);
 
-                _noiseJob.Complete();
-                _console.WriteTiles(_buffer);
+                _noiseJob = _console.ScheduleWriteTiles(_buffer, _noiseJob);
             }
+            
         }
 
-        static byte GlyphFromNoiseValue(float v)
+        static byte Select(float v)
         {
             if (v >= .75f)
                 return CodePage437.ToCP437('█');
@@ -123,7 +122,7 @@ namespace RLTK.Samples
 
                 t.fgColor = Color.white * v;
                 t.bgColor = Color.blue * v;
-                t.glyph = GlyphFromNoiseValue(v);
+                t.glyph = Select(v);
 
                 buffer[index] = t;
             }

@@ -10,7 +10,7 @@ namespace RLTK
         public Color bgColor;
         
 
-        public static Tile Default => new Tile
+        public static Tile EmptyTile => new Tile
         {
             bgColor = Color.black,
             fgColor = Color.white,

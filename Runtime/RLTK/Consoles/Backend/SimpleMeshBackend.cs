@@ -24,7 +24,7 @@ namespace RLTK.Consoles
     {
         Mesh _mesh;
         JobHandle _rebuildDataJob = default;
-        bool _jobRunning = false;
+        bool _isDirty = false;
 
         NativeArray<int> _indices;
         NativeArray<float3> _verts;
@@ -37,10 +37,17 @@ namespace RLTK.Consoles
         public int CellCount => Size.x * Size.y;
 
         int2 _pixelsPerUnit = new int2(8, 8);
-
         
         public int2 PixelsPerUnit => _pixelsPerUnit;
 
+        /// <summary>
+        /// Construct a simple mesh backend for use in a console. The allocator will be used
+        /// to initialize all internal arrays.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="mesh"></param>
+        /// <param name="allocator"></param>
         public SimpleMeshBackend(int width, int height, Mesh mesh)
         {
             _mesh = mesh;
@@ -49,13 +56,20 @@ namespace RLTK.Consoles
 
             Size = new int2(width, height);
 
-            _indices = new NativeArray<int>(cellCount * 6, Allocator.Persistent);
-            _verts = new NativeArray<float3>(cellCount * 4, Allocator.Persistent);
-            _uvs = new NativeArray<float2>(cellCount * 4, Allocator.Persistent);
-            _fgColors = new NativeArray<Color>(cellCount * 4, Allocator.Persistent);
-            _bgColors = new NativeArray<Color>(cellCount * 4, Allocator.Persistent);
+            var allocator = Allocator.Persistent;
+
+            _indices = new NativeArray<int>(cellCount * 6, allocator);
+            _verts = new NativeArray<float3>(cellCount * 4, allocator);
+            _uvs = new NativeArray<float2>(cellCount * 4, allocator);
+            _fgColors = new NativeArray<Color>(cellCount * 4, allocator);
+            _bgColors = new NativeArray<Color>(cellCount * 4, allocator);
 
             InitializeVerts(width, height);
+        }
+
+        public void Draw(Material mat)
+        {
+            Graphics.DrawMesh(_mesh, Vector3.zero, Quaternion.identity, mat, 0);
         }
 
         public void Dispose()
@@ -99,76 +113,43 @@ namespace RLTK.Consoles
             _mesh.Clear();
 
             _mesh.SetVertices(_verts);
-            _mesh.SetIndices(_indices, UnityEngine.MeshTopology.Triangles, 0);
+            _mesh.SetIndices(_indices, MeshTopology.Triangles, 0);
 
             _mesh.RecalculateBounds();
             _mesh.RecalculateNormals();
             _mesh.RecalculateTangents();
         }
-
-
-        [BurstCompile]
-        struct UVJob : IJobParallelFor
+        
+        /// <summary>
+        /// Immediately rebuilds internal rendering data.
+        /// </summary>
+        public void Rebuild(int w, int h, NativeArray<Tile> tiles)
         {
-            [ReadOnly]
-            public NativeArray<Tile> tiles;
+            // Force mesh refresh on next Update
+            _isDirty = true;
 
-            [WriteOnly]
-            [NativeDisableParallelForRestriction]
-            public NativeArray<float2> uvs;
+            _rebuildDataJob.Complete();
 
-            public float2 uvSize;
+            float2 uvSize = new float2(1f / 16f);
 
-            public void Execute(int index)
+            var uvsJob = new UVJob
             {
-                var tile = tiles[index];
+                tiles = tiles,
+                uvs = _uvs,
+                uvSize = uvSize,
 
-                index = index * 4;
+            }.Schedule(tiles.Length, 64, _rebuildDataJob);
 
-                int2 glyphIndex = new int2(
-                    tile.glyph % 16,
-                    16 - 1 - (tile.glyph / 16)
-                    );
-
-
-
-                float2 right = new float2(uvSize.x, 0);
-                float2 up = new float2(0, uvSize.y);
-                float2 bl = glyphIndex * uvSize;
-
-                uvs[index + 0] = bl + up;
-                uvs[index + 1] = bl + up + right;
-                uvs[index + 2] = bl;
-                uvs[index + 3] = bl + right;
-            }
-        }
-
-        [BurstCompile]
-        struct ColorsJob : IJobParallelFor
-        {
-            [ReadOnly]
-            public NativeArray<Tile> tiles;
-
-            [WriteOnly]
-            [NativeDisableParallelForRestriction]
-            public NativeArray<Color> fgColors;
-
-            [WriteOnly]
-            [NativeDisableParallelForRestriction]
-            public NativeArray<Color> bgColors;
-
-            public void Execute(int index)
+            var colorJob = new ColorsJob
             {
-                var tile = tiles[index];
+                tiles = tiles,
+                fgColors = _fgColors,
+                bgColors = _bgColors,
+            }.Schedule(tiles.Length, 64, _rebuildDataJob);
 
-                index = index * 4;
+            var jobs = JobHandle.CombineDependencies(uvsJob, colorJob);
 
-                for (int i = 0; i < 4; ++i)
-                {
-                    fgColors[index + i] = tile.fgColor;
-                    bgColors[index + i] = tile.bgColor;
-                }
-            }
+            jobs.Complete();
         }
 
         /// <summary>
@@ -178,6 +159,8 @@ namespace RLTK.Consoles
         /// <returns>The job handle for the scheduled jobs.</returns>
         public JobHandle ScheduleRebuild(int w, int h, NativeArray<Tile> tiles, JobHandle inputDeps = default)
         {
+            _isDirty = true;
+
             _rebuildDataJob = JobHandle.CombineDependencies(inputDeps, _rebuildDataJob);
 
             float2 uvSize = new float2(1f / 16f);
@@ -198,27 +181,91 @@ namespace RLTK.Consoles
             }.Schedule(tiles.Length, 64, _rebuildDataJob);
 
             _rebuildDataJob = JobHandle.CombineDependencies(uvsJob, colorJob);
-
-            _jobRunning = true;
-
+            
             return _rebuildDataJob;
         }
 
-        public void Update()
+        /// <summary>
+        /// Should be called every frame. Applies any scheduled changes.
+        /// </summary>
+        public void ApplyMeshChanges()
         {
-            if (_jobRunning && _rebuildDataJob.IsCompleted)
+            if (_isDirty)
             {
                 // Required by the safety system
                 _rebuildDataJob.Complete();
-
-                _jobRunning = false;
+                
+                _isDirty = false;
                 
                 _mesh.SetUVs(0, _uvs);
                 _mesh.SetUVs(1, _fgColors);
                 _mesh.SetUVs(2, _bgColors);
             }
         }
+    }
+    
+
+    [BurstCompile]
+    struct UVJob : IJobParallelFor
+    {
+        [ReadOnly]
+        public NativeArray<Tile> tiles;
+
+        [WriteOnly]
+        [NativeDisableParallelForRestriction]
+        public NativeArray<float2> uvs;
+
+        public float2 uvSize;
+
+        public void Execute(int index)
+        {
+            var tile = tiles[index];
+
+            index = index * 4;
+
+            int2 glyphIndex = new int2(
+                tile.glyph % 16,
+                16 - 1 - (tile.glyph / 16)
+                );
 
 
+
+            float2 right = new float2(uvSize.x, 0);
+            float2 up = new float2(0, uvSize.y);
+            float2 bl = glyphIndex * uvSize;
+
+            uvs[index + 0] = bl + up;
+            uvs[index + 1] = bl + up + right;
+            uvs[index + 2] = bl;
+            uvs[index + 3] = bl + right;
+        }
+    }
+
+    [BurstCompile]
+    struct ColorsJob : IJobParallelFor
+    {
+        [ReadOnly]
+        public NativeArray<Tile> tiles;
+
+        [WriteOnly]
+        [NativeDisableParallelForRestriction]
+        public NativeArray<Color> fgColors;
+
+        [WriteOnly]
+        [NativeDisableParallelForRestriction]
+        public NativeArray<Color> bgColors;
+
+        public void Execute(int index)
+        {
+            var tile = tiles[index];
+
+            index = index * 4;
+
+            for (int i = 0; i < 4; ++i)
+            {
+                fgColors[index + i] = tile.fgColor;
+                bgColors[index + i] = tile.bgColor;
+            }
+        }
     }
 }

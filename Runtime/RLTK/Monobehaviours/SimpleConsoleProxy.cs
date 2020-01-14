@@ -15,7 +15,7 @@ namespace RLTK.MonoBehaviours
         [SerializeField]
         int _height = 16;
 
-        SimpleConsole _console;
+        NativeConsole _console;
         bool _resized;
         
         public int2 Size => _console == null ? new int2(_width, _height) : _console.Size;
@@ -27,7 +27,10 @@ namespace RLTK.MonoBehaviours
 
         public int2 PixelsPerUnit => _console.PixelsPerUnit;
 
+        public Material Material => _console.Material;
+
         const string DEFAULT_MAT_PATH_ = "Materials/ConsoleMat";
+
 
         private void OnEnable()
         {
@@ -53,22 +56,17 @@ namespace RLTK.MonoBehaviours
             }
 
             _console?.Dispose();
-
-            var backend = new SimpleMeshBackend(_width, _height, filter.sharedMesh);
-            _console = new SimpleConsole(_width, _height, backend, Allocator.Persistent);
-
-            //_console.ClearScreen();
+            
+            _console = new NativeConsole(_width, _height, renderer.sharedMaterial, filter.sharedMesh);
         }
 
-        private void Update()
+        public void Update()
         {
             if (_resized)
             {
                 _resized = false;
                 RebuildConsole();
             }
-
-            _console.RebuildIfDirty();
         }
 
         private void LateUpdate()
@@ -81,6 +79,8 @@ namespace RLTK.MonoBehaviours
         {
             _console?.Dispose();
         }
+
+        
 
         private void OnValidate()
         {
@@ -105,9 +105,9 @@ namespace RLTK.MonoBehaviours
             _resized = true;
         }
 
-        public void Draw(Font font, Material mat)
+        public void Draw()
         {
-            throw new System.NotImplementedException();
+            _console.Draw();
         }
 
         public int At(int x, int y)
@@ -154,17 +154,28 @@ namespace RLTK.MonoBehaviours
         {
             throw new System.NotImplementedException();
         }
+
+        public NativeArray<Tile> ReadTiles(int x, int y, int length, Allocator allocator) => 
+            _console.ReadTiles(x, y, length, allocator);
         
 
         public JobHandle ScheduleWriteTiles(NativeArray<Tile> input, JobHandle inputDeps) => 
             _console.ScheduleWriteTiles(input, inputDeps);
 
         public JobHandle ScheduleCopyTiles(NativeArray<Tile> buffer, JobHandle inputDeps) => 
-            _console.ScheduleCopyTiles(buffer, inputDeps);
+            _console.ScheduleReadAllTiles(buffer, inputDeps);
 
-        public NativeArray<Tile> CopyTiles(Allocator allocator) => _console.CopyTiles(allocator);
+        public NativeArray<Tile> ReadAllTiles(Allocator allocator) => 
+            _console.ReadAllTiles(allocator);
 
-        public void WriteTiles(NativeArray<Tile> input) => _console.WriteTiles(input);
+        public void WriteTiles(int x, int y, NativeArray<Tile> tiles) => 
+            _console.WriteTiles(x, y, tiles);
+
+        public void WriteAllTiles(NativeArray<Tile> input) => 
+            _console.WriteAllTiles(input);
+
+        public void SetMaterial(Material mat) => 
+            _console.SetMaterial(mat);
 
 #if UNITY_EDITOR
         void OnDrawGizmosSelected()
@@ -183,6 +194,8 @@ namespace RLTK.MonoBehaviours
 
             Gizmos.DrawCube(r.center, r.size * .95f);
         }
+
+
 #endif
     }
 }

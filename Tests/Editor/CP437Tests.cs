@@ -2,6 +2,7 @@
 using RLTK;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
 using static RLTK.CodePage437;
@@ -48,6 +49,33 @@ public class CP437Tests
 
             Assert.AreEqual(ch, convertedCH);
             Assert.AreEqual(by, convertedBY);
+        }
+    }
+
+    [Test]
+    public void TestConvert()
+    {
+        {
+            string str = "Hello";
+            var convertedBytes = StringToCP437(str, Allocator.Temp);
+            var convertedString = CP437ToString(convertedBytes);
+            Assert.AreEqual(convertedString, str);
+        }
+
+        {
+            NativeArray<byte> bytes = new NativeArray<byte>(5, Allocator.Temp);
+            //72, 101, 108, 108, 111
+            bytes[0] = 72;
+            bytes[1] = 101;
+            bytes[2] = 108;
+            bytes[3] = 108;
+            bytes[4] = 111;
+
+            var convertedString = CP437ToString(bytes);
+            var convertedBytes = StringToCP437(convertedString, Allocator.Temp);
+
+            for (int i = 0; i < bytes.Length; ++i)
+                Assert.AreEqual(bytes[i], convertedBytes[i]);
         }
     }
 }
