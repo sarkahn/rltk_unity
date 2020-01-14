@@ -1,373 +1,232 @@
-﻿
-using System;
-using System.Runtime.CompilerServices;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Jobs;
+﻿using UnityEngine;
+using System.Collections;
+using RLTK.Consoles;
+using RLTK;
 using Unity.Mathematics;
-using UnityEngine;
+using Unity.Collections;
 using RLTK.Consoles.Backend;
+using System.Runtime.CompilerServices;
+using Unity.Jobs;
+using static RLTK.Consoles.Jobs.TileJobs;
+using System.Collections.Generic;
 
-namespace RLTK.Consoles
+public class SimpleConsole : IConsole
 {
-    public class SimpleConsole : IConsole, IDisposable
+    public int2 Size
     {
-
-        public bool IsDirty { get; private set; }
-
-        public int2 Size { get; private set; }
-
-        public int Width => Size.x;
-        public int Height => Size.y;
-
-        public int CellCount => Size.x * Size.y;
-
-        
-        public int2 PixelsPerUnit => _backend.PixelsPerUnit;
-
-        IConsoleBackend _backend;
-        NativeArray<Tile> _tiles;
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int At(int x, int y) => y * Height + x;
-
-        JobHandle _tileJobs;
-
-        public SimpleConsole(int width, int height, IConsoleBackend backend, Allocator allocator)
-        {
-            Size = new int2(width, height);
-            _tiles = new NativeArray<Tile>(CellCount, allocator);
-            for( int i = 0; i < _tiles.Length; ++i )
-            {
-                _tiles[i] = new Tile
-                {
-                    glyph = 0,
-                    fgColor = Color.white,
-                    bgColor = Color.black
-                };
-            }
-
-            _backend = backend;
-        }
-
-        public void ClearScreen()
-        {
-            IsDirty = true;
-
-            _tileJobs = new ClearJob
-            {
-                tiles = _tiles
-            }.Schedule(_tiles.Length, 64, _tileJobs);
-        }
-
-        public JobHandle ScheduleClearScreen(JobHandle inputDeps)
-        {
-            IsDirty = true;
-
-            _tileJobs = new ClearJob
-            {
-                tiles = _tiles
-            }.Schedule(_tiles.Length, 64, _tileJobs);
-
-            return _tileJobs;
-        }
-
-        public void Print(int x, int y, string str)
-        {
-            IsDirty = true;
-
-            var bytes = CodePage437.StringToCP437(str, Allocator.TempJob);
-
-            _tileJobs = new WriteStringJob
-            {
-                bytes = bytes,
-                pos = new int2(x, y),
-                tiles = _tiles,
-                width = Size.x,
-            }.Schedule(_tileJobs);
-        }
-
-        public void PrintColor(int x, int y, string str, Color fgColor, Color bgColor)
-        {
-            IsDirty = true;
-
-            var bytes = CodePage437.StringToCP437(str, Allocator.TempJob);
-
-            _tileJobs = new WriteStringJobWithColors
-            {
-                bytes = bytes,
-                pos = new int2(x, y),
-                tiles = _tiles,
-                width = Size.x,
-                fgColor = fgColor,
-                bgColor = bgColor
-            }.Schedule(_tileJobs);
-        }
-
-        /// <summary>
-        /// Schedule jobs to update internal render data if our tile data has changed.
-        /// </summary>
-        public void RebuildIfDirty()
-        {
-            if (IsDirty)
-            {
-                //Debug.Log("Writing to backbuffer");
-                _tileJobs = _backend.ScheduleRebuild(Size.x, Size.y, _tiles, _tileJobs);
-                IsDirty = false;
-            }
-        }
-        
-        public void Update()
-        {
-            _backend.Update();
-        }
-
-
-        public void Draw(Font font, Material mat)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void DrawBox(int x, int y, int width, int height, Color fgColor, Color bgColor)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void DrawBoxDouble(int x, int y, int width, int height, Color fgColor, Color bgColor)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void DrawHollowBox(int x, int y, int width, int height, Color fgColor, Color bgColor)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void DrawHollowBoxDouble(int x, int y, int width, int height, Color fgColor, Color bgColor)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void FillRegion(IntRect r, byte glyph, Color fgColor, Color bgColor)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public byte? Get(int x, int y)
-        {
-            throw new System.NotImplementedException();
-        }
-        
-        public void ForceImmediateRebuild()
-        {
-            IsDirty = true;
-            RebuildIfDirty();
-        }
-
-        public void Resize(int w, int h)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Set(int x, int y, Color fgColor, Color bgColor, byte glyph)
-        {
-        }
-
-
-        public void Dispose()
-        {
-            _tileJobs.Complete();
-
-            _backend?.Dispose();
-
-            if (_tiles.IsCreated)
-                _tiles.Dispose();
-
-        }
-
-        public NativeArray<Tile> CopyTiles(Allocator allocator)
-        {
-            return new NativeArray<Tile>(_tiles, allocator);
-        }
-
-        public void WriteTiles(NativeArray<Tile> buffer)
-        {
-            _tileJobs.Complete();
-
-            NativeArray<Tile>.Copy(buffer, _tiles);
-
-            IsDirty = true;
-        }
-        
-        public JobHandle ScheduleCopyTiles(NativeArray<Tile> buffer, JobHandle inputDeps)
-        {
-            _tileJobs = JobHandle.CombineDependencies(inputDeps, _tileJobs);
-
-            _tileJobs = new CopyTilesJob
-            {
-                source = _tiles,
-                dest = buffer,
-            }.Schedule(_tileJobs);
-
-            return _tileJobs;
-        }
-
-        public JobHandle ScheduleWriteTiles(NativeArray<Tile> input, JobHandle inputDeps)
-        {
-            _tileJobs = JobHandle.CombineDependencies(inputDeps, _tileJobs);
-            
-            //Debug.Log("SCHEDULING WRITE JOB");
-            _tileJobs = new CopyTilesJob
-            {
-                source = input,
-                dest = _tiles,
-            }.Schedule(_tileJobs);
-            
-            IsDirty = true;
-
-            return _tileJobs;
-        }
-
-        #region Jobs
-
-        [BurstCompile]
-        struct CopyTilesJob : IJob
-        {
-            [ReadOnly]
-            public NativeArray<Tile> source;
-
-            [WriteOnly]
-            public NativeArray<Tile> dest;
-
-            public void Execute()
-            {
-                NativeArray<Tile>.Copy(source, dest);
-            }
-        }
-
-        [BurstCompile]
-        struct ClearJob : IJobParallelFor
-        {
-            [WriteOnly]
-            public NativeArray<Tile> tiles;
-
-            public void Execute(int index)
-            {
-                tiles[index] = Tile.Default;
-            }
-        }
-
-        [BurstCompile]
-        struct WriteStringJobWithColors : IJob
-        {
-            public int2 pos;
-            public int width;
-
-            public Color fgColor;
-            public Color bgColor;
-
-            [ReadOnly]
-            [DeallocateOnJobCompletion]
-            public NativeArray<byte> bytes;
-
-            public NativeArray<Tile> tiles;
-
-            public void Execute()
-            {
-                //int index = (height - 1 - pos.y * width) + pos.x;
-                for (int i = 0; i < bytes.Length; ++i)
-                {
-                    int index = pos.y * width + pos.x;
-                    if (index >= 0 && index < tiles.Length)
-                    {
-                        var t = tiles[index];
-                        t.glyph = bytes[i];
-                        if( fgColor != default )
-                            t.fgColor = fgColor;
-                        if( bgColor != default )
-                            t.bgColor = bgColor;
-                        tiles[index] = t;
-                    }
-                    else
-                        return;
-
-                    ++pos.x;
-
-                    if (pos.x >= width)
-                    {
-                        pos.x = 0;
-                        pos.y--;
-                    }
-                }
-            }
-        }
-
-
-        [BurstCompile]
-        struct WriteStringJob : IJob
-        {
-            public int2 pos;
-            public int width;
-
-            [ReadOnly]
-            [DeallocateOnJobCompletion]
-            public NativeArray<byte> bytes;
-
-            public NativeArray<Tile> tiles;
-
-            public void Execute()
-            {
-                //int index = (height - 1 - pos.y * width) + pos.x;
-                for (int i = 0; i < bytes.Length; ++i)
-                {
-                    int index = pos.y * width+ pos.x;
-                    if (index >= 0 && index < tiles.Length)
-                    {
-                        var t = tiles[index];
-                        t.glyph = bytes[i];
-                        tiles[index] = t;
-                    }
-                    else
-                        return;
-
-                    ++pos.x;
-
-                    if (pos.x >= width)
-                    {
-                        pos.x = 0;
-                        pos.y--;
-                    }
-                }
-            }
-        }
-
-        //[BurstCompile]
-        //struct WriteTilesJob : IJob
-        //{
-        //    [ReadOnly]
-        //    public NativeArray<int2> positions;
-        //    [ReadOnly]
-        //    public NativeArray<Tile> sourceTiles;
-            
-        //    [WriteOnly]
-        //    public NativeArray<Tile> destTiles;
-
-        //    public int width;
-        //    public int height;
-
-        //    public void Execute()
-        //    {
-        //        for( int sourceIndex = 0; sourceIndex < sourceTiles.Length; ++sourceIndex )
-        //        {
-        //            var p = positions[sourceIndex];
-        //            int mapIndex = p.y * width + p.x;
-        //            destTiles[mapIndex] = sourceTiles[sourceIndex];
-        //        }
-        //    }
-        //}
-
-        #endregion
-
+        get;
+        private set;
     }
+
+    public int Width => Size.x;
+    public int Height => Size.y;
+
+    public int CellCount => Size.x * Size.y;
+
+    public Material Material { get; private set; }
+
+    public int2 PixelsPerUnit => _backend.PixelsPerUnit;
+    
+
+    protected SimpleMeshBackend _backend;
+    protected NativeArray<Tile> _tiles;
+    protected JobHandle _tileJobs;
+
+    protected bool _isDirty;
+
+    Mesh _mesh;
+
+    /// <summary>
+    /// A simple console that allows you to write Ascii to it.
+    /// </summary>
+    public SimpleConsole(int width, int height, Material material, Mesh mesh)
+    {
+        _mesh = mesh;
+        Material = material;
+
+        Resize(width, height);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int At(int x, int y) => y * Size.x + x;
+
+    public void ClearScreen()
+    {
+        _isDirty = true;
+
+        _tileJobs.Complete();
+
+        new ClearTilesJob
+        {
+            tiles = _tiles
+        }.Run(_tiles.Length);
+    }
+
+    public void Print(int x, int y, string str)
+    {
+        _isDirty = true;
+
+        _tileJobs.Complete();
+
+        var bytes = CodePage437.StringToCP437(str, Allocator.TempJob);
+
+        new WriteTileGlyphsJob
+        {
+            bytes = bytes,
+            pos = new int2(x, y),
+            tiles = _tiles,
+            width = Size.x,
+        }.Run();
+    }
+
+    public NativeArray<Tile> ReadTiles(int x, int y, int len, Allocator allocator)
+    {
+        NativeArray<Tile> buffer = new NativeArray<Tile>(len, allocator);
+
+        len = math.min(len, Size.x - x);
+        
+
+        NativeArray<Tile>.Copy(_tiles, At(x,y), buffer, 0, len);
+
+        return buffer;
+    }
+
+    public NativeArray<Tile> ReadAllTiles(Allocator allocator)
+    {
+        NativeArray<Tile> output = new NativeArray<Tile>(_tiles.Length, allocator);
+        NativeArray<Tile>.Copy(_tiles, output);
+        return output;
+    }
+
+    public void WriteTiles(int x, int y, NativeArray<Tile> tiles)
+    {
+        _isDirty = true;
+        _tileJobs.Complete();
+
+        int len = math.min(tiles.Length, Size.x - x);
+
+        NativeArray<Tile>.Copy(tiles, 0, _tiles, At(x,y), len);
+    }
+
+    public void WriteAllTiles(NativeArray<Tile> tiles)
+    {
+        _isDirty = true;
+        _tileJobs.Complete();
+        NativeArray<Tile>.Copy(tiles, _tiles);
+    }
+
+
+    public void PrintColor(int x, int y, string str, Color fgColor, Color bgColor)
+    {
+        _isDirty = true;
+        _tileJobs.Complete();
+
+        var bytes = CodePage437.StringToCP437(str, Allocator.TempJob);
+
+        new WriteColoredTileGlyphsJob
+        {
+            bytes = bytes,
+            pos = new int2(x, y),
+            destination = _tiles,
+            width = Size.x,
+            fgColor = fgColor,
+            bgColor = bgColor
+        }.Run();
+    }
+    
+    public virtual void Update()
+    {
+        if (_isDirty)
+        {
+            _isDirty = false;
+            _backend.Rebuild(Width, Height, _tiles);
+        }
+
+        _backend.ApplyMeshChanges();
+    }
+
+    /// <summary>
+    /// Draw the console to the screen manually.
+    /// </summary>
+    public void Draw()
+    {
+        _backend.Draw(Material);
+    }
+
+    public void DrawBox(int x, int y, int width, int height, Color fgColor, Color bgColor)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void DrawBoxDouble(int x, int y, int width, int height, Color fgColor, Color bgColor)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void DrawHollowBox(int x, int y, int width, int height, Color fgColor, Color bgColor)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void DrawHollowBoxDouble(int x, int y, int width, int height, Color fgColor, Color bgColor)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void FillRegion(IntRect r, byte glyph, Color fgColor, Color bgColor)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public byte? Get(int x, int y)
+    {
+        var t = _tiles[At(x,y)];
+        return t.glyph;
+    }
+
+
+    public void Resize(int w, int h)
+    {
+        if (w == Width && h == Height)
+            return;
+        
+        Size = new int2(w, h);
+
+        if (_tiles.IsCreated)
+            _tiles.Dispose();
+
+        _tiles = new NativeArray<Tile>(CellCount, Allocator.Persistent);
+
+        for (int i = 0; i < _tiles.Length; ++i)
+            _tiles[i] = Tile.EmptyTile;
+
+        _backend?.Dispose();
+        _backend = new SimpleMeshBackend(Width, Height, _mesh);
+    }
+
+    public void SetMaterial(Material mat) => Material = mat;
+
+    public void Set(int x, int y, Color fgColor, Color bgColor, byte glyph)
+    {
+        int i = At(x, y);
+        _tiles[i] = new Tile
+        {
+            fgColor = fgColor,
+            bgColor = bgColor,
+            glyph = glyph
+        };
+    }
+    
+    public void Dispose()
+    {
+        _tileJobs.Complete();
+
+        _backend?.Dispose();
+
+        if (_tiles.IsCreated)
+            _tiles.Dispose();
+        
+    }
+
+
 }

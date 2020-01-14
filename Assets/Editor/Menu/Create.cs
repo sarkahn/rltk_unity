@@ -32,7 +32,7 @@ namespace RLTK.EditorNS.Menu
 
             console.Resize(40, 15);
 
-            cameraLock.SetTarget(console);
+            cameraLock.SetTarget(console, console.transform);
 
             Selection.activeGameObject = console.gameObject;
         }

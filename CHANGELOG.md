@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.2.0] - 2020-01-14
+* Split console job-related functions into a derived "NativeConsole", "SimpleConsole" provides basic single-threaded behaviour. See the [Readme](README.md) for details.
+* Added more console tests to demonstrate usage.
+* Added a "ManualDraw" sample to show how to render a non-monobehaviour console.
+* Fleshed out readme a bit more.
+
 ## [0.1.3] - 2020-01-08
 * Changed package name to just "RLKT" so it doesn't look so horrible in the packages folder.
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RLTK.Consoles;
+using System;
 using System.Collections;
 using Unity.Mathematics;
 using UnityEngine;
@@ -21,14 +22,39 @@ namespace RLTK.MonoBehaviours
         Camera _camera;
         PixelPerfectCamera _pixelCamera;
         WaitForSeconds _waitTime;
+        
+        IConsole _targetConsole;
+        Transform _targetTransform = null;
 
         [SerializeField]
-        SimpleConsoleProxy _targetConsole;
+        SimpleConsoleProxy _consoleProxy = null;
 
-        public void SetTarget(SimpleConsoleProxy console)
+        Coroutine _routine = null;
+        
+        public void SetTarget(IConsole console, Vector3 pos)
         {
+            if(_routine != null)
+                StopCoroutine(_routine);
+
             _targetConsole = console;
-            StartCoroutine(VerifyCamera());
+            _routine = StartCoroutine(VerifyCamera());
+            SetPos(pos);
+        }
+
+        public void SetTarget(IConsole console, Transform targetTransform)
+        {
+            if( _routine != null )
+                StopCoroutine(_routine);
+
+            _targetConsole = console;
+            _routine = StartCoroutine(VerifyCamera());
+            _targetTransform = targetTransform;
+            SetPos(targetTransform.position);
+        }
+
+        void SetPos(Vector3 p)
+        {
+            transform.position = new Vector3(p.x, p.y, transform.position.z);
         }
 
         private void OnEnable()
@@ -45,12 +71,16 @@ namespace RLTK.MonoBehaviours
 
         private void Start()
         {
-            StartCoroutine(VerifyCamera());
+            if(_consoleProxy == null )
+                _consoleProxy = FindObjectOfType<SimpleConsoleProxy>();
+
+            if (_consoleProxy != null)
+                SetTarget(_consoleProxy, _consoleProxy.transform);
         }
 
         IEnumerator VerifyCamera()
         {
-            while (_targetConsole != null && _targetConsole.isActiveAndEnabled && isActiveAndEnabled && Application.isPlaying)
+            while (_targetConsole != null && isActiveAndEnabled && Application.isPlaying)
             {
                 int2 consoleDims = _targetConsole.Size;
                 int2 consolePPU = _targetConsole.PixelsPerUnit;
@@ -64,10 +94,8 @@ namespace RLTK.MonoBehaviours
 
                 int pixelScale = _pixelCamera.pixelRatio;
 
-                _targetConsole.GetComponent<Renderer>()?.sharedMaterial?.SetFloat("_PixelScaleCamera", pixelScale);
+                _targetConsole.Material?.SetFloat("_PixelScaleCamera", pixelScale);
                 
-                
-
                 if (targetRes.x != cameraDims.x || targetRes.y != cameraDims.y)
                 {
                     //Debug.Log("Updating camera dims");
@@ -75,9 +103,8 @@ namespace RLTK.MonoBehaviours
                     _pixelCamera.refResolutionY = targetRes.y;
                 }
 
-                if (_pixelCamera.transform.position != _targetConsole.transform.position)
-                    _pixelCamera.transform.position = _targetConsole.transform.position
-                        + -_targetConsole.transform.forward * 10;
+                if (_targetTransform != null && transform.position != _targetTransform.position)
+                    SetPos(_targetTransform.position);
 
                 yield return _waitTime;
             }

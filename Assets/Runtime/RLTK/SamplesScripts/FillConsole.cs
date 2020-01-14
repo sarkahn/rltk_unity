@@ -1,4 +1,5 @@
 ﻿using RLTK.Consoles;
+using RLTK.MonoBehaviours;
 using Unity.Collections;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace RLTK.Samples
 {
     public class FillConsole : MonoBehaviour
     {
-        IConsole _console;
+        SimpleConsoleProxy _console;
 
         public bool _randomFGColors = false;
         public Color _fgColor = Color.white;
@@ -18,7 +19,7 @@ namespace RLTK.Samples
 
         private void Awake()
         {
-            _console = GetComponent<IConsole>();
+            _console = GetComponent<SimpleConsoleProxy>();
             if (_console == null)
                 Debug.LogError("Couldn't find console", gameObject);
         }
@@ -35,11 +36,13 @@ namespace RLTK.Samples
                 Fill();
                 _update = false;
             }
+
+            _console.Update();
         }
 
         void Fill()
         {
-            var tiles = _console.CopyTiles(Allocator.Temp);
+            var tiles = _console.ReadAllTiles(Allocator.Temp);
             for (int i = 0; i < tiles.Length; ++i)
             {
                 var t = tiles[i];
@@ -48,7 +51,7 @@ namespace RLTK.Samples
                 t.glyph = (byte)Random.Range(0, 255);
                 tiles[i] = t;
             }
-            _console.WriteTiles(tiles);
+            _console.WriteAllTiles(tiles);
         }
 
         private void OnValidate()

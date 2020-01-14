@@ -489,7 +489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d994d465cada224baad851e5b5d7eb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _targetConsole: {fileID: 0}
+  _consoleProxy: {fileID: 967724456}
 --- !u!114 &860560918
 MonoBehaviour:
   m_ObjectHideFlags: 0

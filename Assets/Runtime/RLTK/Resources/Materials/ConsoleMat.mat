@@ -32,7 +32,7 @@ Material:
     - _Intensity: 0.585
     - _LineIntensity: 0.474
     - _PixelScale: 2
-    - _PixelScaleCamera: 2
+    - _PixelScaleCamera: 3
     - _PixelScaleCameraFrequency: 2
     - _Scanlines: 1
     - _ScanlinesFGOnly: 1

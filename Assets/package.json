@@ -1,7 +1,7 @@
 {
   "name": "com.sark.rltk_unity",
   "displayName": "RLTK",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "unity": "2019.3",
   "unityRelease": "0f1",
   "description": "The Rogulike Toolkit: A framework for developing traditional text based roguelikes in Unity. Ported from rltk_rs.",
@@ -47,6 +47,11 @@
       "displayName": "UnlitComparison",
       "description": "Console and an Unlit Quad side by side for comparison.",
       "path": "Samples~/UnlitComparison"
+    },
+    {
+      "displayName": "ManualDraw",
+      "description": "Shows how to manually draw a SimpleConsole from code.",
+      "path": "Samples~/ManualDraw"
     }
   ]
 }
