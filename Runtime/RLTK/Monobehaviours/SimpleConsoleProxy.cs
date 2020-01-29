@@ -63,10 +63,10 @@ namespace RLTK.MonoBehaviours
             {
                 _resized = false;
                 _console.Resize(_width, _height);
-                RenderUtility.UploadPixelData(_console, Material);
+                RenderUtility.UpdatePixelEffectData(_console);
             }
 
-            RenderUtility.SetMaterialProperties(_console, Material);
+            RenderUtility.UpdatePixelEffectProperties(_console, Material);
             _console.Update();
         }
 

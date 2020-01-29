@@ -14,9 +14,9 @@ namespace RLTK.Rendering
 
     public static class RenderUtility
     {
-        const string PIXEL_COUNT_PROP_NAME = "_PixelCount";
-        const string PPU_PROP_NAME = "_PixelsPerUnit";
-        const string PIXEL_RATIO_PROP_NAME = "_PixelRatio";
+        const string SHADER_PIXELCOUNT_NAME = "_PixelCount";
+        const string SHADER_PIXELSPERUNIT_NAME = "_PixelsPerUnit";
+        const string SHADER_PIXELRATIO_NAME = "_PixelRatio";
 
         const string DEFAULT_MAT_PATH = "Materials/ConsoleMat";
 
@@ -67,9 +67,10 @@ namespace RLTK.Rendering
 
         /// <summary>
         /// Upload "pixel" uvs to the console mesh. Used for pixel effects in the shader.
-        /// Should only be called when the console is resized.
+        /// Only needs to be called when the console is resized, and only if you intend to
+        /// use the "screen" effects in the console shader (IE: screen burn, scanlines)
         /// </summary>
-        public static void UploadPixelData(IConsole console, Material mat)
+        public static void UpdatePixelEffectData(IConsole console)
         {
             int count = console.CellCount;
 
@@ -78,7 +79,7 @@ namespace RLTK.Rendering
             var job = new PixelsJob
             {
                 consoleSize = console.Size,
-                pixelsPerUnit = PixelsPerUnit(mat),
+                pixelsPerUnit = PixelsPerUnit(console.Material),
                 uvs = pixelUVs
             }.Schedule(count, 32);
 
@@ -105,12 +106,18 @@ namespace RLTK.Rendering
             return ppu;
         }
 
+
         /// <summary>
-        /// Adjusts the given camera so it's viewport is sized properly to contain the given console.
-        /// This will add a PixelPerfectCamera Component to the camera if one doesn't exist.
+        /// Adjusts the camera so it's viewport is sized properly to contain the given console.
+        /// This will add a PixelPerfectCamera Component to the camera if one doesn't exist, and adjust
+        /// it's settings automatically. Only needs to be called once each time the console is resized.
         /// </summary>
-        public static void AdjustCameraToConsole(Camera cam, IConsole console)
+        /// <param name="cam">The camera to adjust. A default camera will be found automatically if null.</param>
+        public static void AdjustCameraToConsole(IConsole console, Camera cam = null )
         {
+            if (cam == null)
+                cam = Camera;
+
             cam.orthographic = true;
 
             int2 consoleDims = console.Size;
@@ -127,16 +134,15 @@ namespace RLTK.Rendering
 
             int pixelRatio = pixelCam.pixelRatio;
 
-            console.Material.SetFloat(PIXEL_RATIO_PROP_NAME, pixelRatio);
+            console.Material.SetFloat(SHADER_PIXELRATIO_NAME, pixelRatio);
 
             if (targetRes.x != cameraDims.x || targetRes.y != cameraDims.y)
             {
                 pixelCam.refResolutionX = targetRes.x;
                 pixelCam.refResolutionY = targetRes.y;
             }
-
+            
             var proxyConsole = console as SimpleConsoleProxy;
-
             if( proxyConsole != null )
             {
                 var camTransform = cam.transform;
@@ -148,28 +154,39 @@ namespace RLTK.Rendering
                     camTransform.position = new Vector3(p.x, p.y, p.z - 10);
                 }
             }
+            
         }
 
         /// <summary>
-        /// Sets material properties that will be used in the shader for rendering the given console.
-        /// Note: Unity's PixelPerfectCamera component reports incorrect PixelRatio values
+        /// <para>Sets material properties that will be used in the shader for rendering special
+        /// effects in the console. Note this is NOT required for normal text rendering,
+        /// you only need to call this if you want to use the shader's "screen" effects like
+        /// scanlines and screen burn.</para>
+        /// 
+        /// <para>Important: Unity's PixelPerfectCamera component reports incorrect PixelRatio values
         /// for the first couple of frames. This means we can't reliably call this during Awake/OnEnable.
-        /// An easy workaround is to call it every frame. It's fairly lightweight.
+        /// An easy workaround is to call this every frame. It's fairly lightweight.</para>
         /// </summary>
-        public static void SetMaterialProperties(IConsole console, Material mat)
+        public static void UpdatePixelEffectProperties(IConsole console, Material mat = null)
         {
-            mat.SetFloat(PIXEL_RATIO_PROP_NAME, PixelCamera.pixelRatio);
+            mat = mat == null ? console.Material : mat;
+
+            mat.SetFloat(SHADER_PIXELRATIO_NAME, PixelCamera.pixelRatio);
 
             int2 ppu = PixelsPerUnit(mat);
 
             int2 pixelCount = console.Size * ppu;
 
-            mat.SetVector(PIXEL_COUNT_PROP_NAME, new Vector4(pixelCount.x, pixelCount.y));
+            mat.SetVector(SHADER_PIXELCOUNT_NAME, new Vector4(pixelCount.x, pixelCount.y));
         }
         
+        /// <summary>
+        /// Render the console using the given material
+        /// </summary>
+        /// <param name="console"></param>
+        /// <param name="mat"></param>
         public static void DrawConsole(IConsole console, Material mat)
         {
-            SetMaterialProperties(console, mat);
             Graphics.DrawMesh(console.Mesh, Vector3.zero, Quaternion.identity, mat, 0);
         }
 
@@ -181,6 +198,10 @@ namespace RLTK.Rendering
             return pixelCam;
         }
 
+        /// <summary>
+        /// Job for assigning pixel data to a console mesh. Only needed if using
+        /// the "pixel" effects on the console (screen burn, scanlines)
+        /// </summary>
         [BurstCompile]
         struct PixelsJob : IJobParallelFor
         {

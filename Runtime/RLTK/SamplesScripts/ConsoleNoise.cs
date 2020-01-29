@@ -60,6 +60,8 @@ namespace RLTK.Samples
                 //// Required by the safety system
                 _noiseJob.Complete();
 
+
+
                 InitBuffer();
                 
                 _noiseJob = new NoiseJob
@@ -73,6 +75,15 @@ namespace RLTK.Samples
                 }.Schedule(_buffer.Length, 64, _noiseJob);
 
                 _noiseJob = _console.ScheduleWriteTiles(_buffer, _noiseJob);
+
+                Color fg = new Color32(0xDF, 0xD6, 0x20, 255);
+                Color bg = Color.black;//new Color32(0x40, 0x64, 0xBF, 0xFF);
+                int x = _console.Width / 2 - 19 / 2;
+                int y = _console.Height - 6;
+                _console.PrintColor(x, y + 0, "                   ", fg, bg);
+                _console.PrintColor(x, y + 2, "      RLTK         ", fg, bg);
+                _console.PrintColor(x, y + 1, " Roguelike Toolkit ", fg, bg);
+                _console.PrintColor(x, y + 3, "                   ", fg, bg);
             }
             
         }

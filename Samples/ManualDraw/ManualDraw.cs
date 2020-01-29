@@ -45,22 +45,31 @@ namespace RLTK.Samples
 
             _console.ClearScreen();
             _console.Print(3, 5, "Manual Draw");
+            
         }
 
         private void LateUpdate()
         {
+            // Must be called manually once per frame
             _console.Update();
-            
+
+            // Must be called manually if you want to use "screen" effects in the console 
+            // (Like screenburn and scanlines). Not required for normal text rendering.
+            //RenderUtility.UpdatePixelEffectProperties(_console);
+
+            // Must be called manually once per frame.
             _console.Draw();
         }
 
         void Rebuild()
         {
             _console.Resize(_width, _height);
-            var cam = FindObjectOfType<Camera>();
+            
+            // Only needs to be called if we're using "screen" effects in the console shader.
+            //RenderUtility.UpdatePixelEffectData(_console);
 
-            RenderUtility.UploadPixelData(_console, _mat);
-            RenderUtility.AdjustCameraToConsole(cam, _console);
+            // Must be called any time the console is resized
+            RenderUtility.AdjustCameraToConsole(_console);
         }
 
 #if UNITY_EDITOR

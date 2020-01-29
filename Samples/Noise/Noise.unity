@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -303,8 +303,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1dacebd9391b6042bc24da92f3ceff5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _width: 120
-  _height: 67
+  _width: 40
+  _height: 28
 --- !u!33 &1382755055
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -378,5 +378,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c29c081a0bc44d84981d4a8e908d5d3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _scale: 1.5
+  _scale: 2.7
   _scrollSpeed: 2
