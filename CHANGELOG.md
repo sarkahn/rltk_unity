@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.2] - 2020-01-14
+* Updated readme
+* Moved RenderUtility to Rendering folder
+
 ## [0.2.1] - 2020-01-14
 Rendering changes, removed some cruft
 * Moved most rendering related code to RenderUtility
