@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.2.3] - 2020-01-14
+* Simplified RenderUtility API a little
+ 
 ## [0.2.2] - 2020-01-14
 * Updated readme
 * Moved RenderUtility to Rendering folder

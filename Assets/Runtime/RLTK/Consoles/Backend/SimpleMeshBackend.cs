@@ -210,13 +210,12 @@ namespace RLTK.Consoles
         /// </summary>
         public void Update()
         {
-            if (_isDirty)
+            if(_isDirty)
             {
-                // Required by the safety system
                 _rebuildDataJob.Complete();
-                
+
                 _isDirty = false;
-                
+
                 _mesh.SetUVs(0, _tileUVs);
                 _mesh.SetUVs(1, _fgColors);
                 _mesh.SetUVs(2, _bgColors);

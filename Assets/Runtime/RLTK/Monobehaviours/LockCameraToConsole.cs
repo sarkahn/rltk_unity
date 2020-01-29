@@ -72,7 +72,7 @@ namespace RLTK.MonoBehaviours
         {
             while (_consoleProxy != null && isActiveAndEnabled && Application.isPlaying)
             {
-                RenderUtility.AdjustCameraToConsole(_camera, _consoleProxy);
+                RenderUtility.AdjustCameraToConsole(_consoleProxy, _camera);
 
                 yield return _waitTime;
             }

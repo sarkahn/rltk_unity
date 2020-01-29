@@ -42,6 +42,6 @@ Material:
     - _Scanlines: 1
     - _ScanlinesFGOnly: 0
     - _ScreenBurn: 1
-    - _ScreenBurnIntensity: 0.394
+    - _ScreenBurnIntensity: 0.34
     m_Colors:
     - _PixelsPerUnit: {r: 8, g: 5, b: 0, a: 0}
