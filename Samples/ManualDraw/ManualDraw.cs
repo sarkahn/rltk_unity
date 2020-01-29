@@ -1,5 +1,6 @@
 ﻿using RLTK.Consoles;
 using RLTK.MonoBehaviours;
+using RLTK.Rendering;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
@@ -10,10 +11,10 @@ namespace RLTK.Samples
 {
     public class ManualDraw : MonoBehaviour
     {
-        NativeConsole _console;
+        SimpleConsole _console;
 
         [SerializeField]
-        Material _mat;
+        Material _mat = null;
 
         [SerializeField]
         int _width = 40;
@@ -25,10 +26,8 @@ namespace RLTK.Samples
 
         private void Awake()
         {
-            if (_mat == null)
-                _mat = Resources.Load<Material>("Materials/ConsoleMat");
-
-            _doRebuild = true;
+            _console = new SimpleConsole(_mat);
+            Rebuild();
         }
 
         private void OnDestroy()
@@ -45,30 +44,23 @@ namespace RLTK.Samples
             }
 
             _console.ClearScreen();
-            _console.Print(10, 5, "Hello, World!");
+            _console.Print(3, 5, "Manual Draw");
         }
 
         private void LateUpdate()
         {
             _console.Update();
-
-            if (_console.Material != _mat)
-                _console.SetMaterial(_mat);
-
+            
             _console.Draw();
         }
 
         void Rebuild()
         {
-            _console?.Dispose();
-
-            _console = new NativeConsole(_width, _height, _mat, new Mesh());
+            _console.Resize(_width, _height);
             var cam = FindObjectOfType<Camera>();
 
-            var attach = cam.GetComponent<LockCameraToConsole>();
-            if (attach == null)
-                attach = cam.gameObject.AddComponent<LockCameraToConsole>();
-            attach.SetTarget(_console, transform);
+            RenderUtility.UploadPixelData(_console, _mat);
+            RenderUtility.AdjustCameraToConsole(cam, _console);
         }
 
 #if UNITY_EDITOR

@@ -1,4 +1,5 @@
 ﻿using RLTK.Consoles;
+using RLTK.Rendering;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -17,6 +18,8 @@ namespace RLTK.MonoBehaviours
 
         NativeConsole _console;
         bool _resized;
+
+        public Material Material => _renderer.sharedMaterial;
         
         public int2 Size => _console == null ? new int2(_width, _height) : _console.Size;
 
@@ -27,50 +30,43 @@ namespace RLTK.MonoBehaviours
 
         public int2 PixelsPerUnit => _console.PixelsPerUnit;
 
-        public Material Material => _console.Material;
+        public Mesh Mesh => _console.Mesh;
 
-        const string DEFAULT_MAT_PATH_ = "Materials/ConsoleMat";
+        MeshRenderer _renderer;
+        MeshFilter _filter;
 
-
-        private void OnEnable()
+        private void Awake()
         {
+            _renderer = GetComponent<MeshRenderer>();
+            _filter = GetComponent<MeshFilter>();
+            if (_renderer.sharedMaterial == null)
+                _renderer.sharedMaterial = RenderUtility.DefaultMaterial;
+
+
             RebuildConsole();
         }
 
+
         void RebuildConsole()
         {
-            var renderer = GetComponent<MeshRenderer>();
-            var filter = GetComponent<MeshFilter>();
-
-            filter.sharedMesh = new Mesh();
-
-            if (renderer.sharedMaterial == null)
-            {
-                renderer.sharedMaterial = Resources.Load<Material>(DEFAULT_MAT_PATH_);
-
-                if( renderer.sharedMaterial == null )
-                {
-                    Debug.LogWarning($"No material was set for this console and the default material " +
-                        $"was not found at Resources/{DEFAULT_MAT_PATH_}.", gameObject);
-                }
-            }
-
             _console?.Dispose();
-            
-            _console = new NativeConsole(_width, _height, renderer.sharedMaterial, filter.sharedMesh);
-        }
 
-        public void Update()
-        {
-            if (_resized)
-            {
-                _resized = false;
-                RebuildConsole();
-            }
+            _console = new NativeConsole(_width, _height, Material);
+            _filter.sharedMesh = _console.Mesh;
+
+            _resized = true;
         }
 
         private void LateUpdate()
         {
+            if (_resized)
+            {
+                _resized = false;
+                _console.Resize(_width, _height);
+                RenderUtility.UploadPixelData(_console, Material);
+            }
+
+            RenderUtility.SetMaterialProperties(_console, Material);
             _console.Update();
         }
 
@@ -84,6 +80,9 @@ namespace RLTK.MonoBehaviours
 
         private void OnValidate()
         {
+            _width = math.max(1, _width);
+            _height = math.max(1, _height);
+
             if (isActiveAndEnabled && Application.isPlaying)
                 _resized = true;
         }
@@ -103,6 +102,7 @@ namespace RLTK.MonoBehaviours
             _width = w;
             _height = h;
             _resized = true;
+
         }
 
         public void Draw()
@@ -174,8 +174,8 @@ namespace RLTK.MonoBehaviours
         public void WriteAllTiles(NativeArray<Tile> input) => 
             _console.WriteAllTiles(input);
 
-        public void SetMaterial(Material mat) => 
-            _console.SetMaterial(mat);
+        //public void SetMaterial(Material mat) => 
+        //    _console.SetMaterial(mat);
 
 #if UNITY_EDITOR
         void OnDrawGizmosSelected()

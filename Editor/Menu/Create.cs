@@ -30,7 +30,7 @@ namespace RLTK.EditorNS.Menu
             if (console == null)
                 console = CreateConsole();
 
-            console.Resize(40, 15);
+            console.Resize(25, 15);
 
             cameraLock.SetTarget(console, console.transform);
 

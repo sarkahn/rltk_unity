@@ -9,9 +9,11 @@ using System.Runtime.CompilerServices;
 using Unity.Jobs;
 using static RLTK.Consoles.Jobs.TileJobs;
 using System.Collections.Generic;
+using RLTK.Rendering;
 
 public class SimpleConsole : IConsole
 {
+
     public int2 Size
     {
         get;
@@ -21,13 +23,12 @@ public class SimpleConsole : IConsole
     public int Width => Size.x;
     public int Height => Size.y;
 
-    public int CellCount => Size.x * Size.y;
-
     public Material Material { get; private set; }
 
-    public int2 PixelsPerUnit => _backend.PixelsPerUnit;
+    public int CellCount => Size.x * Size.y;
     
-
+    public int2 PixelsPerUnit => RenderUtility.PixelsPerUnit(Material);
+    
     protected SimpleMeshBackend _backend;
     protected NativeArray<Tile> _tiles;
     protected JobHandle _tileJobs;
@@ -35,15 +36,20 @@ public class SimpleConsole : IConsole
     protected bool _isDirty;
 
     Mesh _mesh;
+    public Mesh Mesh => _mesh;
+
+    public SimpleConsole(Material mat = null)
+    {
+        _mesh = new Mesh();
+
+        Material = mat == null ? RenderUtility.DefaultMaterial : mat;
+    }
 
     /// <summary>
     /// A simple console that allows you to write Ascii to it.
     /// </summary>
-    public SimpleConsole(int width, int height, Material material, Mesh mesh)
+    public SimpleConsole(int width, int height, Material mat = null) : this(mat)
     {
-        _mesh = mesh;
-        Material = material;
-
         Resize(width, height);
     }
     
@@ -139,10 +145,10 @@ public class SimpleConsole : IConsole
         if (_isDirty)
         {
             _isDirty = false;
-            _backend.Rebuild(Width, Height, _tiles);
+            _backend.UploadTileData(_tiles);
         }
 
-        _backend.ApplyMeshChanges();
+        _backend.Update();
     }
 
     /// <summary>
@@ -150,7 +156,7 @@ public class SimpleConsole : IConsole
     /// </summary>
     public void Draw()
     {
-        _backend.Draw(Material);
+        RenderUtility.DrawConsole(this, Material);
     }
 
     public void DrawBox(int x, int y, int width, int height, Color fgColor, Color bgColor)
@@ -200,11 +206,14 @@ public class SimpleConsole : IConsole
         for (int i = 0; i < _tiles.Length; ++i)
             _tiles[i] = Tile.EmptyTile;
 
-        _backend?.Dispose();
-        _backend = new SimpleMeshBackend(Width, Height, _mesh);
+        if(_backend == null )
+            _backend = new SimpleMeshBackend(Width, Height, _mesh);
+        else
+            _backend.Resize(Width, Height);
+        
+        _isDirty = true;
     }
-
-    public void SetMaterial(Material mat) => Material = mat;
+    
 
     public void Set(int x, int y, Color fgColor, Color bgColor, byte glyph)
     {
@@ -225,7 +234,6 @@ public class SimpleConsole : IConsole
 
         if (_tiles.IsCreated)
             _tiles.Dispose();
-        
     }
 
 

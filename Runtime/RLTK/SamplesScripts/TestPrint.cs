@@ -6,6 +6,9 @@ namespace RLTK.Samples
 {
     public class TestPrint : MonoBehaviour
     {
+        [SerializeField]
+        Color _color = Color.blue;
+
         public SimpleConsoleProxy _console;
 
         public int2 _position;
@@ -20,11 +23,9 @@ namespace RLTK.Samples
 
         // Update is called once per frame
         void Update()
-        {
+        { 
             _console.ClearScreen();
-            _console.PrintColor(_position.x, _position.y, _text, Color.blue);
+            _console.PrintColor(_position.x, _position.y, _text, _color);
         }
-
-
     }
 }

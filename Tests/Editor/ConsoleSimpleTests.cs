@@ -14,7 +14,7 @@ public class ConsoleSimpleTests
     {
         int w = 40;
         int h = 15;
-        var console = new SimpleConsole(w, h, null, new Mesh());
+        var console = new SimpleConsole(w, h);
 
         console.Print(0, 0, "Hello");
         var tiles = console.ReadTiles(0, 0, 5, Allocator.Temp);
@@ -33,7 +33,7 @@ public class ConsoleSimpleTests
     {
         int w = 40;
         int h = 15;
-        var console = new SimpleConsole(w, h, null, new Mesh());
+        var console = new SimpleConsole(w, h);
 
         var tiles = new NativeArray<Tile>(w * h, Allocator.Temp);
 
@@ -61,7 +61,7 @@ public class ConsoleSimpleTests
     {
         int w = 40;
         int h = 15;
-        var console = new SimpleConsole(w, h, null, new Mesh());
+        var console = new SimpleConsole(w, h);
 
         console.Print(5, 5, "Hello");
 
@@ -81,7 +81,7 @@ public class ConsoleSimpleTests
     {
         int w = 40;
         int h = 15;
-        var console = new SimpleConsole(w, h, null, new Mesh());
+        var console = new SimpleConsole(w, h);
 
         string str = "Hello";
 
@@ -104,7 +104,7 @@ public class ConsoleSimpleTests
     {
         int w = 40;
         int h = 15;
-        var console = new SimpleConsole(w, h, null, new Mesh());
+        var console = new SimpleConsole(w, h);
 
         Assert.AreEqual(40, console.Width);
         Assert.AreEqual(15, console.Height);

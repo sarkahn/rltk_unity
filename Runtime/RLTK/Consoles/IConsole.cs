@@ -14,13 +14,13 @@ namespace RLTK.Consoles
         
         int2 PixelsPerUnit { get; }
 
+        Mesh Mesh { get; }
+
         Material Material { get; }
         
         void ClearScreen();
 
         void Resize(int w, int h);
-
-        void Draw();
 
         int At(int x, int y);
         
@@ -48,6 +48,7 @@ namespace RLTK.Consoles
 
         byte? Get(int x, int y);
 
-        void SetMaterial(Material mat);
+        void Draw();
+        
     }
 }
