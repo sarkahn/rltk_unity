@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.2.1] - 2020-01-14
+Rendering changes, removed some cruft
+* Moved most rendering related code to RenderUtility
+* Removed PostProcessing stuff
+* Added optional "pixel data" to mesh for proper scanline /pixel effects
+* Updated to Unity 2019.3.0f6
+
 ## [0.2.0] - 2020-01-14
 * Split console job-related functions into a derived "NativeConsole", "SimpleConsole" provides basic single-threaded behaviour. See the [Readme](README.md) for details.
 * Added more console tests to demonstrate usage.
