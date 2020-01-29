@@ -13,7 +13,7 @@ namespace RLTK.Samples
         public Color _fgColor = Color.white;
 
         public bool _randomBGColors = false;
-        public Color _bgColor = Color.black;
+        public Color _bgColor = Color.black; 
 
         private bool _update;
 
@@ -36,8 +36,7 @@ namespace RLTK.Samples
                 Fill();
                 _update = false;
             }
-
-            _console.Update();
+            
         }
 
         void Fill()

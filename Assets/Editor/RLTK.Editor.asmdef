@@ -2,7 +2,8 @@
     "name": "RLTK.Editor",
     "references": [
         "GUID:15fc0a57446b3144c949da3e2b9737a9",
-        "GUID:44b930416f788d0449e9dce56820cadb"
+        "GUID:44b930416f788d0449e9dce56820cadb",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
     ],
     "includePlatforms": [],
     "excludePlatforms": [

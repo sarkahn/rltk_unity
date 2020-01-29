@@ -14,25 +14,23 @@ namespace RLTK.Consoles.Backend
     /// </summary>
     public interface IConsoleBackend : IDisposable
     {
-        int2 PixelsPerUnit { get; }
-        void Draw(Material mat);
+        void Resize(int width, int height);
         
         /// <summary>
-        /// Immediately rebuilds the internal render data.
+        /// Immediately rebuilds the backend using the given tile data
         /// </summary>
-        void Rebuild(int w, int h, NativeArray<Tile> tiles);
+        void UploadTileData(NativeArray<Tile> tiles);
 
         /// <summary>
         /// Schedule parallel jobs to rebuild the internal render data. Requires read-only access to the 
         /// tiles array.
         /// </summary>
-        JobHandle ScheduleRebuild(int w, int h, NativeArray<Tile> tiles, JobHandle inputDeps = default);
-
-
+        JobHandle ScheduleUploadTileData(NativeArray<Tile> tiles, JobHandle inputDeps = default);
+        
         /// <summary>
         /// Should be called once per frame. Manages internal job completion without blocking.
         /// </summary>
-        void ApplyMeshChanges();
+        void Update();
 
     }
 }

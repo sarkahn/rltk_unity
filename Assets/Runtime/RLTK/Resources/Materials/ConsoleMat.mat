@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: ConsoleMat
   m_Shader: {fileID: 4800000, guid: 7ed6810dbf84d4d44a425e006f0f4836, type: 3}
-  m_ShaderKeywords: HARD_LINES SCANLINES SCANLINES_FG_ONLY
+  m_ShaderKeywords: HARD_LINES SCANLINES SCREEN_BURN _APPLYPIXELSCALE_NONE _SCANLINES_SCREENPIXELS
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -26,16 +26,18 @@ Material:
     m_Floats:
     - _ApplyPixelScale: 0
     - _BGCutoff: 0.01
+    - _CameraPixelScaleFrequency: 5
     - _Cutoff: 1.56
     - _Frequency: 4
     - _HardLines: 1
     - _Intensity: 0.585
-    - _LineIntensity: 0.474
-    - _PixelScale: 2
+    - _LineIntensity: 0.529
+    - _PixelScale: 4.37
     - _PixelScaleCamera: 3
     - _PixelScaleCameraFrequency: 2
+    - _ScanlineFrequency: 1
     - _Scanlines: 1
-    - _ScanlinesFGOnly: 1
-    - _ScreenBurn: 0
-    - _ScreenBurnIntensity: 0.775
+    - _ScanlinesFGOnly: 0
+    - _ScreenBurn: 1
+    - _ScreenBurnIntensity: 0.599
     m_Colors: []

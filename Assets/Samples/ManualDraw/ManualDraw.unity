@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 111569946}
   - component: {fileID: 111569945}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Console
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -150,9 +150,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b41982cdced2304bbb8ea6999b9d597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mat: {fileID: 0}
-  _width: 40
-  _height: 22
+  _mat: {fileID: 2100000, guid: 5e4268eb2636dad44b054c88e0f3abff, type: 2}
+  _width: 20
+  _height: 10
 --- !u!4 &111569946
 Transform:
   m_ObjectHideFlags: 0
@@ -179,8 +179,6 @@ GameObject:
   - component: {fileID: 1234095316}
   - component: {fileID: 1234095315}
   - component: {fileID: 1234095320}
-  - component: {fileID: 1234095319}
-  - component: {fileID: 1234095318}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -205,8 +203,8 @@ Camera:
   m_GameObject: {fileID: 1234095314}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -253,39 +251,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1234095318
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1234095314}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d994d465cada224baad851e5b5d7eb5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _consoleProxy: {fileID: 0}
---- !u!114 &1234095319
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1234095314}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_AssetsPPU: 100
-  m_RefResolutionX: 320
-  m_RefResolutionY: 180
-  m_UpscaleRT: 0
-  m_PixelSnapping: 0
-  m_CropFrameX: 0
-  m_CropFrameY: 0
-  m_StretchFill: 0
 --- !u!114 &1234095320
 MonoBehaviour:
   m_ObjectHideFlags: 0

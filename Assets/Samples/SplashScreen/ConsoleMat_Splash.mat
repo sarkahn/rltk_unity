@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: ConsoleMat_Splash
   m_Shader: {fileID: 4800000, guid: 7ed6810dbf84d4d44a425e006f0f4836, type: 3}
-  m_ShaderKeywords: SCANLINES SCREEN_BURN _APPLYPIXELSCALE_CAMERA
+  m_ShaderKeywords: HARD_LINES SCANLINES SCREEN_BURN _APPLYPIXELSCALE_CAMERA _SCANLINES_PIXELS
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -28,16 +28,17 @@ Material:
     - _BGCutoff: 0.036
     - _Cutoff: 1.56
     - _Frequency: 4
-    - _HardLines: 0
+    - _HardLines: 1
     - _Intensity: 0.585
-    - _LineIntensity: 0.074
+    - _LineIntensity: 0.18
     - _PixelScale: 1
     - _PixelScaleCamera: 3
     - _PixelScaleCameraFrequency: 2
     - _PixelScaling: 1
+    - _ScanlineFrequency: 1
     - _Scanlines: 1
     - _ScanlinesFGOnly: 0
     - _ScreenBurn: 1
-    - _ScreenBurnIntensity: 0.096
+    - _ScreenBurnIntensity: 0.214
     m_Colors:
     - _PixelsPerUnit: {r: 8, g: 5, b: 0, a: 0}

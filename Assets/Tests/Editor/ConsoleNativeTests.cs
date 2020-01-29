@@ -21,7 +21,7 @@ public class ConsoleNativeTests
     {
         int w = 40;
         int h = 15;
-        var console = new NativeConsole(w, h, null, new Mesh());
+        var console = new NativeConsole(w, h);
 
         string str = "Hello";
 
@@ -42,7 +42,7 @@ public class ConsoleNativeTests
     {
         int w = 40;
         int h = 15;
-        var console = new NativeConsole(w, h, null, new Mesh());
+        var console = new NativeConsole(w, h);
 
         string str = "Hello";
 

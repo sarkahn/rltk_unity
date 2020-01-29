@@ -28,17 +28,14 @@ namespace RLTK.Consoles
 
         NativeArray<int> _indices;
         NativeArray<float3> _verts;
-        NativeArray<float2> _uvs;
+        NativeArray<float2> _tileUVs;
+        NativeArray<float2> _pixelUVs;
         NativeArray<Color> _fgColors;
         NativeArray<Color> _bgColors;
 
         public int2 Size { get; private set; }
 
         public int CellCount => Size.x * Size.y;
-
-        int2 _pixelsPerUnit = new int2(8, 8);
-        
-        public int2 PixelsPerUnit => _pixelsPerUnit;
 
         /// <summary>
         /// Construct a simple mesh backend for use in a console. The allocator will be used
@@ -52,39 +49,49 @@ namespace RLTK.Consoles
         {
             _mesh = mesh;
 
-            int cellCount = width * height;
-
-            Size = new int2(width, height);
-
-            var allocator = Allocator.Persistent;
-
-            _indices = new NativeArray<int>(cellCount * 6, allocator);
-            _verts = new NativeArray<float3>(cellCount * 4, allocator);
-            _uvs = new NativeArray<float2>(cellCount * 4, allocator);
-            _fgColors = new NativeArray<Color>(cellCount * 4, allocator);
-            _bgColors = new NativeArray<Color>(cellCount * 4, allocator);
-
-            InitializeVerts(width, height);
-        }
-
-        public void Draw(Material mat)
-        {
-            Graphics.DrawMesh(_mesh, Vector3.zero, Quaternion.identity, mat, 0);
+            Resize(width, height);
         }
 
         public void Dispose()
         {
             _rebuildDataJob.Complete();
 
-            _indices.Dispose();
-            _verts.Dispose();
-            _uvs.Dispose();
-            _fgColors.Dispose();
-            _bgColors.Dispose();
+            if (_indices.IsCreated)
+                _indices.Dispose();
+
+            if (_verts.IsCreated)
+                _verts.Dispose();
+
+            if (_tileUVs.IsCreated)
+                _tileUVs.Dispose();
+
+            if (_pixelUVs.IsCreated)
+                _pixelUVs.Dispose();
+
+            if (_fgColors.IsCreated)
+                _fgColors.Dispose();
+
+            if (_bgColors.IsCreated)
+                _bgColors.Dispose();
         }
 
-        void InitializeVerts(int w, int h)
+
+
+        public void Resize(int w, int h)
         {
+            Size = new int2(w, h);
+
+            _isDirty = true;
+
+            Dispose();
+            RebuildArrays();
+            InitializeVerts();
+        }
+
+        void InitializeVerts()
+        {
+            int w = Size.x;
+            int h = Size.y;
             float3 start = -new float3(w, h, 0) / 2f;
             for (int x = 0; x < w; ++x)
                 for (int y = 0; y < h; ++y)
@@ -119,15 +126,28 @@ namespace RLTK.Consoles
             _mesh.RecalculateNormals();
             _mesh.RecalculateTangents();
         }
-        
+
+        void RebuildArrays()
+        {
+            int cellCount = Size.x * Size.y;
+            var allocator = Allocator.Persistent;
+
+            _indices = new NativeArray<int>(cellCount * 6, allocator);
+            _verts = new NativeArray<float3>(cellCount * 4, allocator);
+            _tileUVs = new NativeArray<float2>(cellCount * 4, allocator);
+            _pixelUVs = new NativeArray<float2>(cellCount * 4, allocator);
+            _fgColors = new NativeArray<Color>(cellCount * 4, allocator);
+            _bgColors = new NativeArray<Color>(cellCount * 4, allocator);
+        }
+
         /// <summary>
-        /// Immediately rebuilds internal rendering data.
+        /// Immediately rebuilds internal rendering data using the given tiles.
         /// </summary>
-        public void Rebuild(int w, int h, NativeArray<Tile> tiles)
+        public void UploadTileData(NativeArray<Tile> tiles)
         {
             // Force mesh refresh on next Update
             _isDirty = true;
-
+            
             _rebuildDataJob.Complete();
 
             float2 uvSize = new float2(1f / 16f);
@@ -135,7 +155,7 @@ namespace RLTK.Consoles
             var uvsJob = new UVJob
             {
                 tiles = tiles,
-                uvs = _uvs,
+                uvs = _tileUVs,
                 uvSize = uvSize,
 
             }.Schedule(tiles.Length, 64, _rebuildDataJob);
@@ -157,7 +177,7 @@ namespace RLTK.Consoles
         /// tiles array.
         /// </summary>
         /// <returns>The job handle for the scheduled jobs.</returns>
-        public JobHandle ScheduleRebuild(int w, int h, NativeArray<Tile> tiles, JobHandle inputDeps = default)
+        public JobHandle ScheduleUploadTileData(NativeArray<Tile> tiles, JobHandle inputDeps = default)
         {
             _isDirty = true;
 
@@ -168,7 +188,7 @@ namespace RLTK.Consoles
             var uvsJob = new UVJob
             {
                 tiles = tiles,
-                uvs = _uvs,
+                uvs = _tileUVs,
                 uvSize = uvSize,
 
             }.Schedule(tiles.Length, 64, _rebuildDataJob);
@@ -188,7 +208,7 @@ namespace RLTK.Consoles
         /// <summary>
         /// Should be called every frame. Applies any scheduled changes.
         /// </summary>
-        public void ApplyMeshChanges()
+        public void Update()
         {
             if (_isDirty)
             {
@@ -197,7 +217,7 @@ namespace RLTK.Consoles
                 
                 _isDirty = false;
                 
-                _mesh.SetUVs(0, _uvs);
+                _mesh.SetUVs(0, _tileUVs);
                 _mesh.SetUVs(1, _fgColors);
                 _mesh.SetUVs(2, _bgColors);
             }
@@ -227,9 +247,7 @@ namespace RLTK.Consoles
                 tile.glyph % 16,
                 16 - 1 - (tile.glyph / 16)
                 );
-
-
-
+            
             float2 right = new float2(uvSize.x, 0);
             float2 up = new float2(0, uvSize.y);
             float2 bl = glyphIndex * uvSize;
@@ -268,4 +286,5 @@ namespace RLTK.Consoles
             }
         }
     }
+
 }

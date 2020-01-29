@@ -16,7 +16,7 @@ namespace RLTK.Consoles
     /// </summary>
     public class NativeConsole : SimpleConsole
     {
-        public NativeConsole(int width, int height, Material mat, Mesh mesh) : base(width, height, mat, mesh)
+        public NativeConsole(int width, int height, Material mat = null) : base(width, height, mat)
         {}
 
         public JobHandle ScheduleClearScreen(JobHandle inputDeps)
@@ -130,11 +130,11 @@ namespace RLTK.Consoles
         {
             if (_isDirty)
             {
-                _isDirty = true;
-                _tileJobs = _backend.ScheduleRebuild(Width, Height, _tiles, _tileJobs);
+                _isDirty = false;
+                _tileJobs = _backend.ScheduleUploadTileData(_tiles, _tileJobs);
             }
 
-            _backend.ApplyMeshChanges();
+            _backend.Update();
         }
 
     }
