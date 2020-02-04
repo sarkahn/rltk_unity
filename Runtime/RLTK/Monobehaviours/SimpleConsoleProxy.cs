@@ -120,10 +120,8 @@ namespace RLTK.MonoBehaviours
         public void PrintColor(int x, int y, string str, Color fgColor = default, Color bgColor = default)
             => _console.PrintColor(x, y, str, fgColor, bgColor);
 
-        public void Set(int x, int y, Color fgColor, Color bgColor, byte glyph)
-        {
-            throw new System.NotImplementedException();
-        }
+        public void Set(int x, int y, Color fgColor, Color bgColor, byte glyph) => 
+            _console.Set(x, y, fgColor, bgColor, glyph);
 
         public void DrawBox(int x, int y, int width, int height, Color fgColor, Color bgColor)
         {

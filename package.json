@@ -1,7 +1,7 @@
 {
   "name": "com.sark.rltk_unity",
   "displayName": "RLTK",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "unity": "2019.3",
   "unityRelease": "0f6",
   "description": "Roguelike Toolkit: A framework for developing traditional text based roguelikes in Unity. Ported from rltk_rs.",
@@ -52,6 +52,11 @@
       "displayName": "ManualDraw",
       "description": "Shows how to manually draw a SimpleConsole from code.",
       "path": "Samples~/ManualDraw"
+    },
+    {
+      "displayName": "FOVExample",
+      "description": "A simple scene showing off the FOV API and visuals.",
+      "path": "Samples~/FOVExample"
     }
   ]
 }
