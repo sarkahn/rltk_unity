@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using Unity.Jobs;
 
 namespace RLTK.Samples
 {
-    public struct TestMap : RLTK.FOV.IVisibilityMap, IDisposable
+    public struct TestMap : FOV.IVisibilityMap, IDisposable
     {
         int width;
         int height;
@@ -77,17 +78,18 @@ namespace RLTK.Samples
         {
             var fovPos = WorldToConsolePos(transform.position);
 
-            var visiblePoints = RLTK.FOV.GetVisiblePoints(fovPos, _range, _testMap);
+            var points = new NativeList<int2>((_range * 2) * (_range * 2), Allocator.TempJob);
+            FOV.GetVisiblePointsJob(fovPos, _range, _testMap, points).Run();
 
             _console.ClearScreen();
             
-            foreach ( var p in visiblePoints )
+            foreach ( var p in points )
             {
                 char ch = _testMap.IsOpaque(p) ? '#' : '.';
                 _console.Set(p.x, p.y, Color.white, Color.black, CodePage437.ToCP437(ch));
             }
             
-            visiblePoints.Dispose();
+            points.Dispose();
         }
     }
 }

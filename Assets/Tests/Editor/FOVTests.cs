@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -41,7 +42,10 @@ public class FOVTests
             new int2(1, 1),
             new int2(2, 1));
 
-        var points = FOV.GetVisiblePoints(0, 5, map);
+        int range = 5;
+
+        var points = new NativeList<int2>((range * 2) * (range * 2), Allocator.TempJob);
+        FOV.GetVisiblePointsJob(0, 5, map, points).Run();
 
         Assert.False(points.Contains(new int2(3, 3)));
         Assert.True(points.Contains(new int2(2, 1)));
@@ -50,4 +54,5 @@ public class FOVTests
         points.Dispose();
         map.Dispose();
     }
+
 }
