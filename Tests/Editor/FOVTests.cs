@@ -3,6 +3,7 @@ using RLTK;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -10,7 +11,6 @@ using Unity.Mathematics;
 using UnityEngine;
 
 [TestFixture]
-[BurstCompile]
 public class FOVTests
 {
     public struct TestMap : FOV.IVisibilityMap, IDisposable
@@ -96,6 +96,24 @@ public class FOVTests
         map.Dispose();
     }
 
+    [Test]
+    public void ViewshedContainsNoDuplicates()
+    {
+        var map = new TestMap(20, 20, Allocator.TempJob,
+        new int2(1, 1),
+        new int2(2, 1));
+
+        int range = 5;
+
+        var points = new NativeList<int2>((range * 2) * (range * 2), Allocator.TempJob);
+        FOV.GetVisiblePointsJob(0, 5, map, points).Run();
+
+        var arr = points.ToArray();
+        Assert.AreEqual(arr.Length, arr.Distinct().ToArray().Length);
+
+        points.Dispose();
+        map.Dispose();
+    }
 
 
 

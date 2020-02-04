@@ -1,4 +1,5 @@
 ﻿
+using RLTK.NativeContainers;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst;
@@ -52,20 +53,35 @@ namespace RLTK
             }
         }
 
-        public static void GetVisiblePoints<T>(int2 origin, int range, T visibilityMap, NativeList<int2> pointsBuffer)
+        public static NativeArray<int2> GetVisiblePoints<T>(int2 origin, int range, T visibilityMap, Allocator allocator)
             where T : IVisibilityMap
         {
+            return GetPointSet(origin, range, visibilityMap).ToNativeArray(allocator);
+        }
+
+        public static void GetVisiblePoints<T>(int2 origin, int range, T visibilityMap, NativeList<int2> buffer)
+            where T : IVisibilityMap
+        {
+            GetPointSet(origin, range, visibilityMap).FillBuffer(buffer);
+        }
+
+        static NativeHashSet<int2> GetPointSet<T>(int2 origin, int range, T visibilityMap) where T : IVisibilityMap
+        {
+            NativeHashSet<int2> pointSet = new NativeHashSet<int2>((range * 2) * (range * 2), Allocator.Temp);
+
             BresenhamCircle circle = new BresenhamCircle(origin, range);
             var points = circle.GetPoints(Allocator.Temp);
             for (int i = 0; i < points.Length; ++i)
             {
                 var p = points[i];
 
-                ScanFOVLine(origin, p, visibilityMap, pointsBuffer);
+                ScanFOVLine(origin, p, visibilityMap, pointSet);
             }
+
+            return pointSet;
         }
 
-        static void ScanFOVLine<T>(int2 start, int2 end, T map, NativeList<int2> visiblePoints) where T : IVisibilityMap
+        static void ScanFOVLine<T>(int2 start, int2 end, T map, NativeHashSet<int2> pointSet) where T : IVisibilityMap
         {
             var line = new VectorLine(start, end);
             var linePoints = line.GetPoints(Allocator.Temp);
@@ -76,7 +92,7 @@ namespace RLTK
                 if (!map.IsInBounds(p))
                     return;
 
-                visiblePoints.Add(p);
+                pointSet.TryAdd(p);
 
                 if (map.IsOpaque(p))
                     return;
