@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.4] - 2020-02-03
+* Added "geometry" classes for lines and circles
+* Added FOV functionality and an FOV sample
+
 ## [0.2.3] - 2020-01-14
 * Simplified RenderUtility API a little
  

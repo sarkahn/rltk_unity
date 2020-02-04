@@ -5,7 +5,8 @@
         "UnityEditor.TestRunner",
         "Unity.Mathematics",
         "RLTK",
-        "Unity.Burst"
+        "Unity.Burst",
+        "Unity.Collections"
     ],
     "includePlatforms": [
         "Editor"
