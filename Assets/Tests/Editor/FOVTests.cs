@@ -55,4 +55,48 @@ public class FOVTests
         map.Dispose();
     }
 
+    [BurstCompile]
+    struct FOVJob : IJob
+    {
+        public int2 origin;
+        public int range;
+        public TestMap map;
+        public NativeList<int2> buffer;
+
+        public void Execute()
+        {
+            FOV.GetVisiblePoints(origin, range, map, buffer);
+        }
+    }
+
+    [Test]
+    public void UseFOVInsideJob()
+    {
+        var map = new TestMap(20, 20, Allocator.TempJob,
+        new int2(1, 1),
+        new int2(2, 1));
+
+        int range = 5;
+
+        var points = new NativeList<int2>((range * 2) * (range * 2), Allocator.TempJob);
+
+        new FOVJob
+        {
+            origin = 0,
+            range = 5,
+            map = map,
+            buffer = points
+        }.Schedule().Complete();
+        
+        Assert.False(points.Contains(new int2(3, 3)));
+        Assert.True(points.Contains(new int2(2, 1)));
+        Assert.True(points.Contains(new int2(1, 1)));
+
+        points.Dispose();
+        map.Dispose();
+    }
+
+
+
+
 }

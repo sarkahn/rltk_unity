@@ -22,7 +22,7 @@ public struct VectorLine //: IEnumerable<int2>
         this.end = end;
     }
 
-    public NativeArray<int2> GetPoints(Allocator allocator = Allocator.TempJob)
+    public NativeList<int2> GetPoints(Allocator allocator = Allocator.TempJob)
     {
         float2 curr = start + new float2(.5f, .5f);
         float2 dest = end + new float2(.5f, .5f);
