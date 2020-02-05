@@ -1,6 +1,9 @@
 # Change Log
 
-## [0.2.5] - 2020-02-03
+## [0.2.6] - 2020-02-04
+* Added a much more accurate FOV algorithm (BeveledCorners)
+
+## [0.2.5] - 2020-02-04
 * Reworked FOV API to be usable inside external jobs
 
 ## [0.2.4] - 2020-02-03
