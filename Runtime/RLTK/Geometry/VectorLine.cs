@@ -6,7 +6,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using System.Linq;
 
-public struct VectorLine //: IEnumerable<int2>
+public struct VectorLine : IEnumerable<int2>
 {
     int2 start;
     int2 end;
@@ -27,7 +27,6 @@ public struct VectorLine //: IEnumerable<int2>
         float2 curr = start + new float2(.5f, .5f);
         float2 dest = end + new float2(.5f, .5f);
         var slope = math.normalize(dest - curr);
-        
         int count = (int)math.distance(start, end) + 2;
 
         NativeList<int2> points = new NativeList<int2>(count, allocator);
@@ -47,13 +46,11 @@ public struct VectorLine //: IEnumerable<int2>
             last = p;
         }
 
-        //points.Add(p);
-
         return points;
     }
 
     // Foreach is not currently supported in Burst
-    /*
+    
     public Enumerator GetEnumerator() => new Enumerator(this);
 
     IEnumerator<int2> IEnumerable<int2>.GetEnumerator() => GetEnumerator();
@@ -63,22 +60,28 @@ public struct VectorLine //: IEnumerable<int2>
     public struct Enumerator : IEnumerator<int2>
     {
         VectorLine line;
+        float2 curr;
+        float2 dest;
+        float2 slope;
 
         public Enumerator(VectorLine line)
         {
             this.line = line;
+            curr = line.start + new float2(.5f, .5f);
+            dest = line.end + new float2(.5f, .5f);
+            slope = math.normalize(dest - curr);
         }
 
-        public int2 Current => new int2(line.curr);
+        public int2 Current => new int2(math.floor(curr));
         object IEnumerator.Current => Current;
         
         public bool MoveNext()
         {
-            int2 p = new int2(line.curr);
+            int2 p = new int2(curr);
 
             if( p.x != line.end.x || p.y != line.end.y )
             {
-                line.curr += line.slope;
+                curr += slope;
                 return true;
             }
 
@@ -88,5 +91,5 @@ public struct VectorLine //: IEnumerable<int2>
         public void Dispose() { }
         public void Reset() { }
     }
-    */
+    
 }

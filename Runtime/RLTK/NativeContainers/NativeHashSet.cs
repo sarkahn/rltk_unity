@@ -1,11 +1,11 @@
-﻿/*
- Copyright 2018 Jackson Dunstan
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+//-----------------------------------------------------------------------
+// <copyright file="NativeHashSet.cs" company="Jackson Dunstan">
+//     Copyright (c) Jackson Dunstan. See LICENSE.txt.
+// </copyright>
+//-----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -30,7 +30,7 @@ namespace RLTK.NativeContainers
         /// </summary>
         [FieldOffset(0)]
         internal byte* Items;
-
+        
         // 4-byte padding on 32-bit architectures here
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace RLTK.NativeContainers
         /// </summary>
         [FieldOffset(8)]
         internal byte* Next;
-
+        
         // 4-byte padding on 32-bit architectures here
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace RLTK.NativeContainers
         /// </summary>
         [FieldOffset(16)]
         internal byte* Buckets;
-
+        
         // 4-byte padding on 32-bit architectures here
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace RLTK.NativeContainers
         /// </summary>
         internal const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);
     }
-
+    
     /// <summary>
     /// A hash set native collection.
     /// </summary>
@@ -90,7 +90,7 @@ namespace RLTK.NativeContainers
     [DebuggerDisplay("Length = {Length}. Capacity = {Capacity}")]
     [DebuggerTypeProxy(typeof(NativeHashSetDebugView<>))]
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct NativeHashSet<T> : IDisposable
+    public unsafe struct NativeHashSet<T> : IDisposable, IEnumerable<T>
 #if CSHARP_7_3_OR_NEWER
         where T : unmanaged
 #else
@@ -113,7 +113,7 @@ namespace RLTK.NativeContainers
             /// </summary>
             internal int NextEntryIndex;
         }
-
+        
         /// <summary>
         /// State of the set or null if the list is created with the default
         /// constructor or <see cref="Dispose()"/> has been called. This is
@@ -141,7 +141,7 @@ namespace RLTK.NativeContainers
         /// Allocator to allocate unmanaged memory with
         /// </summary>
         readonly Allocator m_Allocator;
-
+        
         /// <summary>
         /// Create an empty hash set with a given capacity
         /// </summary>
@@ -162,7 +162,7 @@ namespace RLTK.NativeContainers
                     "Allocator must be Temp, TempJob or Persistent",
                     "allocator");
             }
-
+            
             RequireBlittable();
 
             // Insist on a minimum capacity
@@ -172,7 +172,7 @@ namespace RLTK.NativeContainers
             }
 
             m_Allocator = allocator;
-
+            
             // Allocate the state
             NativeHashSetState* state = (NativeHashSetState*)UnsafeUtility.Malloc(
                 sizeof(NativeHashSetState),
@@ -180,12 +180,12 @@ namespace RLTK.NativeContainers
                 allocator);
 
             state->ItemCapacity = capacity;
-
+            
             // To reduce collisions, use twice as many buckets
             int bucketLength = capacity * 2;
             bucketLength = NextHigherPowerOfTwo(bucketLength);
             state->BucketCapacityMask = bucketLength - 1;
-
+            
             // Allocate state arrays
             int nextOffset;
             int bucketOffset;
@@ -217,7 +217,7 @@ namespace RLTK.NativeContainers
                 1);
 #endif
 #endif
-
+            
             Clear();
         }
 
@@ -271,7 +271,7 @@ namespace RLTK.NativeContainers
                 Reallocate(value);
             }
         }
-
+        
         /// <summary>
         /// Try to add an item to the set.
         ///
@@ -288,7 +288,7 @@ namespace RLTK.NativeContainers
         public bool TryAdd(T item)
         {
             RequireWriteAccess();
-
+            
             NativeMultiHashSetIterator tempIt;
             if (TryGetFirstValueAtomic(m_State, item, out tempIt))
             {
@@ -345,7 +345,7 @@ namespace RLTK.NativeContainers
 
             return true;
         }
-
+        
         /// <summary>
         /// Remove all items from the set.
         ///
@@ -354,7 +354,7 @@ namespace RLTK.NativeContainers
         public void Clear()
         {
             RequireWriteAccess();
-
+            
             int* buckets = (int*)m_State->Buckets;
             for (int i = 0; i <= m_State->BucketCapacityMask; ++i)
             {
@@ -392,7 +392,7 @@ namespace RLTK.NativeContainers
         public bool Remove(T item)
         {
             RequireWriteAccess();
-
+            
             // First find the slot based on the hash
             int* buckets = (int*)m_State->Buckets;
             int* nextPtrs = (int*)m_State->Next;
@@ -443,7 +443,7 @@ namespace RLTK.NativeContainers
         public bool Contains(T item)
         {
             RequireReadAccess();
-
+            
             NativeMultiHashSetIterator tempIt;
             return TryGetFirstValueAtomic(m_State, item, out tempIt);
         }
@@ -486,7 +486,7 @@ namespace RLTK.NativeContainers
         public void Dispose()
         {
             RequireWriteAccess();
-
+            
             // Make sure we're not double-disposing
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #if UNITY_2018_3_OR_NEWER
@@ -495,7 +495,7 @@ namespace RLTK.NativeContainers
 			DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
 #endif
 #endif
-
+            
             Deallocate();
         }
 
@@ -512,12 +512,12 @@ namespace RLTK.NativeContainers
         public JobHandle Dispose(JobHandle inputDeps)
         {
             RequireWriteAccess();
-
+            
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Clear the dispose sentinel, but don't Dispose it
             DisposeSentinel.Clear(ref m_DisposeSentinel);
 #endif
-
+            
             // Schedule the job
             DisposeJob disposeJob = new DisposeJob { Set = this };
             JobHandle jobHandle = disposeJob.Schedule(inputDeps);
@@ -526,7 +526,7 @@ namespace RLTK.NativeContainers
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.Release(m_Safety);
 #endif
-
+            
             m_State = null;
             return jobHandle;
         }
@@ -542,12 +542,6 @@ namespace RLTK.NativeContainers
             {
                 Set.Deallocate();
             }
-        }
-
-        public NativeArray<T> ToNativeArray(Allocator allocator)
-        {
-            var arr = new NativeArray<T>(Length, allocator);
-            return ToNativeArray(arr);
         }
 
         /// <summary>
@@ -570,7 +564,7 @@ namespace RLTK.NativeContainers
             int index = 0)
         {
             RequireReadAccess();
-
+            
             if (index < 0)
             {
                 index = 0;
@@ -582,39 +576,12 @@ namespace RLTK.NativeContainers
                 array = new NativeArray<T>(length + index, m_Allocator);
             }
 
-            int* bucketArray = (int*)m_State->Buckets;
-            int* bucketNext = (int*)m_State->Next;
-            for (int i = 0; i <= m_State->BucketCapacityMask; ++i)
-            {
-                for (int b = bucketArray[i]; b != -1; b = bucketNext[b])
-                {
-                    array[index] = UnsafeUtility.ReadArrayElement<T>(
-                        m_State->Items,
-                        b);
-                    index++;
-                }
-            }
+            var enumerator = GetEnumerator();
+            
+            while (enumerator.MoveNext())
+                array[index++] = enumerator.Current;
 
             return array;
-        }
-
-        public void FillBuffer(NativeList<T> buffer)
-        {
-            buffer.Clear();
-
-            RequireReadAccess();
-            
-            int* bucketArray = (int*)m_State->Buckets;
-            int* bucketNext = (int*)m_State->Next;
-            for (int i = 0; i <= m_State->BucketCapacityMask; ++i)
-            {
-                for (int b = bucketArray[i]; b != -1; b = bucketNext[b])
-                {
-                    buffer.Add(UnsafeUtility.ReadArrayElement<T>(
-                        m_State->Items,
-                        b));
-                }
-            }
         }
 
         /// <summary>
@@ -644,7 +611,7 @@ namespace RLTK.NativeContainers
             UnsafeUtility.Free(m_State, m_Allocator);
             m_State = null;
         }
-
+        
         /// <summary>
         /// Allocate an entry from the free list. The list must not be full.
         /// </summary>
@@ -675,7 +642,7 @@ namespace RLTK.NativeContainers
                     Interlocked.Exchange(
                         ref state->FirstFreeTLS[threadIndex * NativeHashSetState.IntsPerCacheLine],
                         -2);
-
+                    
                     // If it failed try to get one from the never-allocated array
                     if (state->AllocatedIndexLength < state->ItemCapacity)
                     {
@@ -819,7 +786,7 @@ namespace RLTK.NativeContainers
                 get
                 {
                     m_Set.RequireReadAccess();
-
+                    
                     return m_Set.m_State->ItemCapacity;
                 }
             }
@@ -839,7 +806,7 @@ namespace RLTK.NativeContainers
             public bool TryAdd(T item)
             {
                 m_Set.RequireWriteAccess();
-
+                
                 NativeMultiHashSetIterator tempIt;
                 if (TryGetFirstValueAtomic(m_Set.m_State, item, out tempIt))
                 {
@@ -885,7 +852,7 @@ namespace RLTK.NativeContainers
                 }
                 return true;
             }
-
+            
             /// <summary>
             /// Set whether both read and write access should be allowed for the
             /// set. This is used for automated testing purposes only.
@@ -989,7 +956,7 @@ namespace RLTK.NativeContainers
 
             // Free the old state contents
             UnsafeUtility.Free(m_State->Items, m_Allocator);
-
+            
             // Set the new state contents
             if (m_State->AllocatedIndexLength > m_State->ItemCapacity)
             {
@@ -1007,7 +974,7 @@ namespace RLTK.NativeContainers
         /// </summary>
         private static void RequireBlittable()
         {
-            // No check is necessary because C# 7.3 uses `where T : unmanaged`
+// No check is necessary because C# 7.3 uses `where T : unmanaged`
 #if !CSHARP_7_3_OR_NEWER
 			if (!UnsafeUtility.IsBlittable<T>())
 			{
@@ -1016,7 +983,7 @@ namespace RLTK.NativeContainers
 			}
 #endif
         }
-
+        
         /// <summary>
         /// Throw an exception if the set isn't readable
         /// </summary>
@@ -1105,7 +1072,7 @@ namespace RLTK.NativeContainers
             int totalSize = bucketOffset + UnsafeUtility.SizeOf<int>() * bucketLength;
             return totalSize;
         }
-
+        
         /// <summary>
         /// Set whether both read and write access should be allowed for the
         /// set. This is used for automated testing purposes only.
@@ -1124,8 +1091,68 @@ namespace RLTK.NativeContainers
                 allowReadOrWriteAccess);
 #endif
         }
-    }
 
+        public Enumerator GetEnumerator() => new Enumerator(this);
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+
+        public struct Enumerator : IEnumerator<T>
+        {
+            int index;
+            int bucket;
+
+            int* bucketNext;
+            int* bucketArray;
+
+            NativeHashSetState* state;
+
+            public Enumerator(NativeHashSet<T> set)
+            {
+                set.RequireReadAccess();
+
+                index = -1;
+                bucket = -1;
+                state = set.m_State;
+
+                bucketArray = (int*)state->Buckets;
+                bucketNext = (int*)state->Next;
+
+            }
+
+            public T Current => UnsafeUtility.ReadArrayElement<T>(
+                                state->Items,
+                                bucket);
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() { }
+
+            public bool MoveNext()
+            {
+                if (bucket != -1)
+                    bucket = bucketNext[bucket];
+
+                if (bucket == -1)
+                {
+                    while (bucket == -1 && index <= state->BucketCapacityMask)
+                    {
+                        index++;
+                        bucket = bucketArray[index];
+                    }
+                }
+
+                return index <= state->BucketCapacityMask;
+            }
+
+            public void Reset() { }
+
+        }
+
+    }
+    
     /// <summary>
     /// Provides a debugger view of <see cref="NativeHashSet{T}"/>.
     /// </summary>
@@ -1145,7 +1172,7 @@ namespace RLTK.NativeContainers
         /// Set to provide a view of
         /// </summary>
         private readonly NativeHashSet<T> m_Set;
-
+        
         /// <summary>
         /// Create the debug view for a given set
         /// </summary>
@@ -1157,7 +1184,7 @@ namespace RLTK.NativeContainers
         {
             m_Set = set;
         }
-
+        
         /// <summary>
         /// Get all the items in the set.
         ///
@@ -1167,19 +1194,29 @@ namespace RLTK.NativeContainers
         {
             get
             {
-                using (NativeArray<T> array = m_Set.ToNativeArray())
-                {
+                var enumerator = m_Set.GetEnumerator();
 
-                    List<T> result = new List<T>(array.Length);
-                    foreach (T item in array)
-                    {
-                        if (m_Set.Contains(item))
-                        {
-                            result.Add(item);
-                        }
-                    }
-                    return result;
+                List<T> result = new List<T>(m_Set.Length);
+                while (enumerator.MoveNext())
+                {
+                    result.Add(enumerator.Current);
                 }
+
+                return result;
+                
+                //using (NativeArray<T> array = m_Set.ToNativeArray())
+                //{
+                    
+                //    List<T> result = new List<T>(array.Length);
+                //    foreach (T item in array)
+                //    {
+                //        if (m_Set.Contains(item))
+                //        {
+                //            result.Add(item);
+                //        }
+                //    }
+                //    return result;
+                //}
             }
         }
     }
