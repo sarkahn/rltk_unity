@@ -11,11 +11,11 @@ namespace RLTK.FieldOfView.BeveledCorners
 
     public static class FOV
     {
-        static public void Compute<T>(int2 origin, int ramge, T map) where T : IVisibilityMap
+        static public void Compute<T>(int2 origin, int range, T map) where T : IVisibilityMap
         { 
             map.SetVisible(origin);
             for (int octant = 0; octant < 8; octant++)
-                Compute(octant, origin, ramge, 1, new Slope(1, 1), new Slope(0, 1), map);
+                Compute(octant, origin, range, 1, new Slope(1, 1), new Slope(0, 1), map);
         }
 
 
