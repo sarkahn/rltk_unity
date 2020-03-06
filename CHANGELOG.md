@@ -1,3 +1,10 @@
+## [0.2.9](https://github.com/sarkahn/rltk_unity/compare/v0.2.8...v0.2.9) (2020-03-06)
+
+
+### Bug Fixes
+
+* revert doc copies in bash script ([d7d9f0e](https://github.com/sarkahn/rltk_unity/commit/d7d9f0ee6e1c771c27eb9a870140243802629ae4))
+
 ## [0.2.8](https://github.com/sarkahn/rltk_unity/compare/v0.2.7...v0.2.8) (2020-03-06)
 
 
