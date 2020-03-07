@@ -1,5 +1,7 @@
 # RLTK for Unity
 
+[![openupm](https://img.shields.io/npm/v/com.sark.rltk_unity?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.sark.rltk_unity/)
+
 This is a framework built specifically for creating roguelikes and rendering ascii efficiently and without artifacts inside Unity. While the API is made to be as simple and straightforward as possible, internally it utilizes Unity's Job system and Burst compiler to achieve great performance and avoid any memory allocations whenever possible.
 
 This was developed in Unity version 2019.3.06f.
@@ -68,6 +70,17 @@ Along with RLTK I am [developing a Roguelike that uses RLTK as a backend](https:
 
 
 ## How to get it
+
+### Install via OpenUPM
+
+The package is available on the [openupm registry](https://openupm.com). It's recommended to install it via [openupm-cli](https://github.com/openupm/openupm-cli).
+
+```
+openupm add com.sark.rltk_unity
+```
+
+### Install via Git URL
+
 The recommended way to use this package is via the Unity Package Manager. At the top left 
 of the package manager, click the "+" button and choose "Add package from git url...". 
 Then paste in `https://github.com/sarkahn/rltk_unity.git#upm`
