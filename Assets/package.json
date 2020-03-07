@@ -1,6 +1,6 @@
 {
   "name": "com.sark.rltk_unity",
-  "displayName": "RLTK",
+  "displayName": "Roguelike Toolkit (RLTK)",
   "version": "0.2.9",
   "unity": "2019.3",
   "unityRelease": "0f6",
