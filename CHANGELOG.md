@@ -1,3 +1,6 @@
+## [0.2.10] (2020-10-30)
+Converted to "embedded package". Updated to Unity 2020 and updated package dependencies 
+
 ## [0.2.9](https://github.com/sarkahn/rltk_unity/compare/v0.2.8...v0.2.9) (2020-03-06)
 
 

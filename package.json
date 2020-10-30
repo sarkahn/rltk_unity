@@ -1,0 +1,63 @@
+{
+  "name": "com.sark.rltk_unity",
+  "displayName": "RLTK",
+  "version": "0.2.10",
+  "unity": "2020.2",
+  "unityRelease": "0b8",
+  "description": "Roguelike Toolkit: A framework for developing traditional text based roguelikes in Unity. Ported from rltk_rs.",
+  "keywords": [
+    "rltk",
+    "roguelike"
+  ],
+  "dependencies": {
+    "com.unity.burst": "1.3.2",
+    "com.unity.test-framework": "1.1.3",
+    "com.unity.collections": "0.12.0-preview.13",
+    "com.unity.jobs": "0.5.0-preview.14",
+    "com.unity.mathematics": "1.1.0",
+    "com.unity.render-pipelines.universal": "10.0.0-preview.16"
+  },
+  "author": {
+    "name": "Sark",
+    "email": "sarkahn@gmail.com",
+    "url": "https://github.com/sarkahn/"
+  },
+  "samples": [
+    {
+      "displayName": "SplashScreen",
+      "description": "Splash screen.",
+      "path": "Samples~/SplashScreen"
+    },
+    {
+      "displayName": "Hello World",
+      "description": "A simple script that writes to a position on the console.",
+      "path": "Samples~/HelloWorld"
+    },
+    {
+      "displayName": "Noise",
+      "description": "Generate noise using jobs and insert into each tile of the console.",
+      "path": "Samples~/Noise"
+    },
+    {
+      "displayName": "ShaderExample",
+      "description": "Shows off the the console shader. You can tweak the properties from the material in the scene's hierarchy folder.",
+      "path": "Samples~/ShaderExample"
+    },
+    {
+      "displayName": "UnlitComparison",
+      "description": "Console and an Unlit Quad side by side for comparison.",
+      "path": "Samples~/UnlitComparison"
+    },
+    {
+      "displayName": "ManualDraw",
+      "description": "Shows how to manually draw a SimpleConsole from code.",
+      "path": "Samples~/ManualDraw"
+    },
+    {
+      "displayName": "FOVExample",
+      "description": "A simple scene showing off the FOV API and visuals.",
+      "path": "Samples~/FOVExample"
+    }
+  ],
+  "type": "tool"
+}
