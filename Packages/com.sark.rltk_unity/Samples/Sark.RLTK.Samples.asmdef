@@ -1,0 +1,24 @@
+{
+    "name": "Sark.RLTK.Samples",
+    "rootNamespace": "",
+    "references": [
+        "GUID:95d094c764f5f734489a95a337660cb3",
+        "GUID:b8c9c7241ae5ebe40a9be59499692c24",
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:c51471e3aa1693642b24763147328a2e",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:8a2eafa29b15f444eb6d74f94a930e1d",
+        "GUID:44b930416f788d0449e9dce56820cadb",
+        "GUID:2665a8d13d1b3f18800f46e256720795"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

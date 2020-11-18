@@ -2,8 +2,8 @@ MIT License
 
 Copyright (c) 2020 Sark
 
-This project was originally built from the  Roguelike Toolkit for Rust by TheBracket
- (Copyright 2019 Herbert Wolverson (DBA Bracket Productions))
+This project is a port of https://github.com/thebracket/rltk_rs
+(Copyright 2019 Herbert Wolverson (DBA Bracket Productions))
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,68 +1,48 @@
 # The Roguelike Toolkit (RLTK) for Unity
 
-![](Documentation~/images~/splash.png)
+RLTK is a set of tools used for building pixel perfect ascii-based roguelikes in Unity. The tools are separated into a few individual packages, while this package uses all those separate tools to host a few demos showing off them off.
 
-This is a framework built specifically for creating roguelikes and rendering ascii efficiently and without artifacts inside Unity. While the API is made to be as simple and straightforward as possible, internally it utilizes Unity's Job system and Burst compiler to achieve great performance and avoid any memory allocations whenever possible.
+This framework was originally based on [The Roguelike Toolkit (RLTK), implemented for Rust](https://github.com/thebracket/rltk_rs) by TheBracket.
 
-This code is based off [The Roguelike Toolkit (RLTK), implemented for Rust](https://github.com/thebracket/rltk_rs).
+##### The Individual Packages:
+* __Pathfinding__: [Github](https://github.com/sarkahn/pathfinding) - [OpenUPM](https://openupm.com/packages/com.sark.pathfinding/) - A simple generic pathfinding solution that's usable in jobs and burst.
+* __Terminals__: [Github](https://github.com/sarkahn/terminals) - [OpenUPM](https://openupm.com/packages/com.sark.terminals/) - A set of terminals used for rendering pixel perfect ascii terminals in Unity.
+* __Tiled Camera__: [Github](https://github.com/sarkahn/tiledcamera) - [OpenUPM](https://openupm.com/packages/com.sark.tiled_camera/) - A camera utility for defining your pixel perfect viewport in terms of tiles.
+* __Common__: [Github](https://github.com/sarkahn/common) - [OpenUPM](https://openupm.com/packages/com.sark.common/) - Common utilities I use in various places.
+
+## Demos
+
+##### Pathfinding 
+
+![](Documentation~/images~/pathfinddemo.png)
+*Demonstrates the pathfinding library using an interactive terminal*
+
+##### FOV
+
+![](Documentation~/images~/fovdemo.png)
+*Demonstrates the FOV algorithm using an interactive terminal*
+
+------
+
+The RLTK demos can be imported from the package manager:
+
+![](Documentation~/images~/samples.png)
+
+------
+
+##### Roguelike Tutorial
+
+In addition to the above samples included in this package, I am [developing a Roguelike that uses RLTK as a backend](https://github.com/sarkahn/rltk_unity_roguelike), based on the excellent [Roguelike Tutorial in Rust](https://bfnightly.bracketproductions.com/rustbook/chapter_1.html). It's being developed using Unity's ECS framework and should be of interest to anyone who would want to know how to actually make a game using RLTK.
 
 ## How to Install
+ 
+##### Via [OpenUPM](https://openupm.com/):
+```
+npm install -g openupm-cli
+openupm add com.sark.rltk_unity
+```
 
-RLTK is designed as a package. You can install it via the Package Manager: 
-
-__"Add package from git url..."__ -> `https://github.com/sarkahn/rltk_unity.git`
-
-## The Samples
-
-The samples demonstrate how to properly set up and write to a console. They can be imported from the package manager gui.
-
-##### Samples/Noise
-
-![](Documentation~/images~/noise.gif)
-
-##### Samples/ShaderExample
-
-![](Documentation~/images~/console_shader2.gif)
-
-
-## The Consoles
-
-There are three primary console types, `SimpleConsole`, `NativeConsole` and `SimpleConsoleProxy`:
-
-##### [SimpleConsole](Runtime/Consoles/SimpleConsole.cs) - Usage is demonstrated in the "ManualDraw" sample.
-  * Provides a straightforward API for writing text to a console.
-  * **NOT** a MonoBehaviour, you must construct and use it directly from code.
-  * Must manually call `Draw()` and `Update()` every frame to render it.
-  * Must call manually `Dispose()` before it goes out of scope to free internal [unmanaged memory](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1.html).
-
-
-
-##### [NativeConsole](Runtime/Consoles/NativeConsole.cs) - Usage is demonstrated in the "Noise" sample.
-  * Derived from `SimpleConsole`, provides a few more advanced functions for those familiar with Unity's [job system](https://docs.unity3d.com/2019.3/Documentation/Manual/JobSystem.html).
-  * Same rules for `Draw()` and `Dispose()`.
-
-##### [SimpleConsoleProxy](Runtime/MonoBehaviours/SimpleConsoleProxy.cs) - Usage is demonstrated in the "Hello World" sample.
-  * A MonoBehaviour wrapped around a `SimpleConsole`. Allows you to easily reference and write to a console from other MonoBehaviours.
-  * Console properties can be tweaked from the inspector.
-  * No need to call `Dispose()` or `Draw()`.
-  * Can be set up automatically using the menu option `GameObject/RLTK/Initialize Simple Console`.
-
-
-
-**IMPORTANT**: In order to avoid rendering artifacts you must make sure to keep the console position locked to the pixel grid (origin works) and have the viewport and camera set up properly. An easy way to automatically set up the camera is directly from code with a single function call to [RenderUtility.AdjustCameraToConsole](Runtime/Rendering/RenderUtility.cs#L112).
-
-
-If you're using SimpleConsoleProxy you can use the [LockCameraToConsole](Runtime/Monobehaviours/LockCameraToConsole.cs) MonoBehaviour instead.
-
-## What does it do
-* You can write to a console with the `Set` and `Print` functions, or retrieve the native tiles from the console for use directly inside jobs. Consoles are fast enough to clear and draw a large number of tiles every frame, the way you would in a traditional roguelike.
-* There are field of view functions in the `FOV` class.
-
-## How to use it
-
-For examples of how to use the different parts of the framework check the [samples](https://github.com/sarkahn/rltk_unity/tree/master/Assets/Samples) and [tests](https://github.com/sarkahn/rltk_unity/tree/master/Assets/Tests/Editor).
-
-Along with RLTK I am [developing a Roguelike that uses RLTK as a backend](https://github.com/sarkahn/rltk_unity_roguelike), based on the excellent [Roguelike Tutorial in Rust](https://bfnightly.bracketproductions.com/rustbook/chapter_1.html). It's being developed using Unity's ECS framework and should be of interest to anyone who would want to know how to actually make a game using RLTK.
+*This will automatically install required dependencies*
 
 ---
 RLTK for Unity will always be free and the code will always be open source. With that being said I put quite a lot of work into it. If you find it useful, please consider donating. Any amount you can spare would really help me out a great deal - thank you!
