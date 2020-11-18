@@ -34,8 +34,8 @@
         "com.unity.mathematics": "1.1.0",
         "com.unity.render-pipelines.universal": "10.1.0",
         "com.sark.common": "0.2.2",
-        "com.sark.terminals": "0.0.2",
-        "com.sark.pathfinding": "0.0.2",
+        "com.sark.terminals": "0.0.7",
+        "com.sark.pathfinding": "0.0.5",
         "com.sark.tiled_camera": "0.1.2",
         "com.unity.inputsystem": "1.1.0-preview.2"
       }
