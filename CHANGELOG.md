@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/sarkahn/rltk_unity/compare/v0.3.0...v0.3.1) (2020-11-18)
+
+
+### Bug Fixes
+
+* Fix  package dependency issue - wrong URP version ([bf4477e](https://github.com/sarkahn/rltk_unity/commit/bf4477e4a99484089206b6ad30d12de619b30d93))
+
 # [0.3.0](https://github.com/sarkahn/rltk_unity/compare/v0.2.9...v0.3.0) (2020-11-18)
 
 
