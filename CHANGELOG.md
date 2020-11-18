@@ -1,3 +1,10 @@
+## [0.3.4](https://github.com/sarkahn/rltk_unity/compare/v0.3.3...v0.3.4) (2020-11-18)
+
+
+### Bug Fixes
+
+* More dependency fixes ([c342baf](https://github.com/sarkahn/rltk_unity/commit/c342bafa37e33532368c5ee73f80d2271afb60d7))
+
 ## [0.3.3](https://github.com/sarkahn/rltk_unity/compare/v0.3.2...v0.3.3) (2020-11-18)
 
 
