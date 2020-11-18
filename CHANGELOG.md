@@ -1,3 +1,10 @@
+## [0.3.3](https://github.com/sarkahn/rltk_unity/compare/v0.3.2...v0.3.3) (2020-11-18)
+
+
+### Bug Fixes
+
+* Forgot tiled_camera dependency ([7a3cea9](https://github.com/sarkahn/rltk_unity/commit/7a3cea9cf97c6de626c83a869b8eec8c088883a5))
+
 ## [0.3.2](https://github.com/sarkahn/rltk_unity/compare/v0.3.1...v0.3.2) (2020-11-18)
 
 
