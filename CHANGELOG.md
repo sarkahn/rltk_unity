@@ -1,3 +1,10 @@
+## [0.3.2](https://github.com/sarkahn/rltk_unity/compare/v0.3.1...v0.3.2) (2020-11-18)
+
+
+### Bug Fixes
+
+* Forgot input system dependency ([432f87e](https://github.com/sarkahn/rltk_unity/commit/432f87e2844bacb9edaea6bf211182a340cf414c))
+
 ## [0.3.1](https://github.com/sarkahn/rltk_unity/compare/v0.3.0...v0.3.1) (2020-11-18)
 
 
