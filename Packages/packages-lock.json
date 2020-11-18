@@ -29,11 +29,10 @@
       "source": "embedded",
       "dependencies": {
         "com.unity.burst": "1.3.9",
-        "com.unity.test-framework": "1.1.3",
         "com.unity.collections": "0.12.0-preview.13",
         "com.unity.jobs": "0.5.0-preview.14",
         "com.unity.mathematics": "1.1.0",
-        "com.unity.render-pipelines.universal": "10.0.0-preview.16",
+        "com.unity.render-pipelines.universal": "10.1.0",
         "com.sark.common": "0.2.2",
         "com.sark.terminals": "0.0.2",
         "com.sark.pathfinding": "0.0.2"

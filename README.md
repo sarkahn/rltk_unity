@@ -1,3 +1,5 @@
+[![openupm](https://img.shields.io/npm/v/com.sark.rltk_unity?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.sark.rltk_unity/)
+
 # The Roguelike Toolkit (RLTK) for Unity
 
 RLTK is a set of tools used for building pixel perfect ascii-based roguelikes in Unity. The tools are separated into a few individual packages, while this package uses all those separate tools to host a few demos showing off them off.
