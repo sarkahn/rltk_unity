@@ -18,6 +18,7 @@
     "com.sark.common": "0.2.2",
     "com.sark.terminals": "0.0.2",
     "com.sark.pathfinding": "0.0.2",
+    "com.sark.tiled_camera": "0.1.2",
     "com.unity.inputsystem": "1.1.0-preview.2"
   },
   "author": {
