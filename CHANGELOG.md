@@ -1,3 +1,10 @@
+## [0.3.5](https://github.com/sarkahn/rltk_unity/compare/v0.3.4...v0.3.5) (2020-11-19)
+
+
+### Bug Fixes
+
+* Added renderutilities for drawing simple terminals without gameobjects ([e7c851e](https://github.com/sarkahn/rltk_unity/commit/e7c851ee7c0cba3b50ee7ea446139e95b5d13665))
+
 ## [0.3.4](https://github.com/sarkahn/rltk_unity/compare/v0.3.3...v0.3.4) (2020-11-18)
 
 
