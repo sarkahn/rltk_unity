@@ -1,3 +1,10 @@
+## [0.3.6](https://github.com/sarkahn/rltk_unity/compare/v0.3.5...v0.3.6) (2020-11-19)
+
+
+### Bug Fixes
+
+* Updated terminals dependency ([6bc23fa](https://github.com/sarkahn/rltk_unity/commit/6bc23fa1aad8880505e5b0d0cc7c14dc6dcea9b8))
+
 ## [0.3.5](https://github.com/sarkahn/rltk_unity/compare/v0.3.4...v0.3.5) (2020-11-19)
 
 
